@@ -81,13 +81,13 @@ if '經手人' in current_trans.columns:
 tab1, tab2, tab3 = st.tabs(["💰收支概況", "📊記帳與管理", "🏸季繳追蹤"])
 
 # ==========================================
-# 💾 左側邊欄：一鍵雲端存檔
+# 左側邊欄：存檔
 # ==========================================
 with st.sidebar:
     st.header("☁️雲端同步存檔")
-    st.info("💡修改完資料後，請務必點擊下方按鈕，資料才會更新 & 儲存")
+    st.info("💡完成資料修改後，請務必點擊下方按鈕以更新")
     
-    if st.button("確認存檔", use_container_width=True):
+    if st.button("👆確認更新並存檔", use_container_width=True):
         with st.spinner("⌛正在上傳資料中，請稍候..."):
             try:
                 # 1. 產生最新的 Excel 檔案內容到記憶體
@@ -135,7 +135,7 @@ with tab2:
         submitted = st.form_submit_button("➕ 確認新增這筆帳目", use_container_width=True)
         if submitted:
             if not t_item:
-                st.warning("⚠️ 請填寫「項目」欄位！")
+                st.warning("⚠️請填寫「項目」欄位！")
             else:
                 # 建立新資料列並附加到現有的 session_state
                 new_record = pd.DataFrame([{
@@ -147,24 +147,24 @@ with tab2:
                     "備註": t_note
                 }])
                 st.session_state.trans_df = pd.concat([st.session_state.trans_df, new_record], ignore_index=True)
-                st.success(f"✅ 已成功記帳：{t_type} - {t_item} ${t_amount}")
+                st.success(f"✅已成功記帳：{t_type} - {t_item} ${t_amount}")
                 st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
 
     st.subheader("📝 收支總表")
 
     # 刪除收支紀錄功能
-    with st.expander("🗑️ 刪除錯誤的收支紀錄"):
+    with st.expander("🗑️刪除錯誤的收支紀錄"):
         del_opts = []
         for idx, row in st.session_state.trans_df.iterrows():
             d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
             del_opts.append(f"{idx} | {d_str} - {row.get('類別','')} : {row.get('項目','')} (${row.get('$','')})")
         
         sel_del = st.selectbox("請選擇要刪除的紀錄：", ["請選擇..."] + del_opts)
-        if st.button("🚨 確認刪除這筆收支"):
+        if st.button("❌確認刪除這筆收支"):
             if sel_del != "請選擇...":
                 del_idx = int(sel_del.split(" | ")[0])
                 st.session_state.trans_df = st.session_state.trans_df.drop(del_idx).reset_index(drop=True)
-                st.success("✅ 已成功刪除該筆紀錄！")
+                st.success("✅已成功刪除該筆紀錄！")
                 st.rerun()
     
     if "日期" in st.session_state.trans_df.columns:
@@ -196,7 +196,7 @@ with tab2:
 # 分頁 1：Summary
 # ------------------------------------------
 with tab1:
-    st.subheader("💰 總財務概況")
+    st.subheader("💰總財務概況")
     
     if '類別' in current_trans.columns and '$' in current_trans.columns:
         total_income = current_trans[current_trans['類別'] == '收入']['$'].sum()
@@ -259,13 +259,13 @@ with tab3:
         with col_m2:
             new_date = st.date_input("📅 繳費日期", datetime.today())
         with col_m3:
-            new_start_date = st.date_input("📅 季繳開始日期", datetime.today(), help="⚠️ 系統限制僅能選擇禮拜二")
+            new_start_date = st.date_input("📅 季繳開始日期", datetime.today(), help="⚠️僅能選擇禮拜二")
             
         submit_new_member = st.form_submit_button("確認新增名單", use_container_width=True)
         
         if submit_new_member:
             if not new_name.strip():
-                st.warning("⚠️ 請填寫「姓名」欄位！")
+                st.warning("⚠️請填寫「姓名」欄位！")
             elif new_start_date.weekday() != 1:
                 weekdays_zh = ["一", "二", "三", "四", "五", "六", "日"]
                 wrong_day = weekdays_zh[new_start_date.weekday()]
@@ -287,7 +287,7 @@ with tab3:
                     [st.session_state.members_df, new_member_data], 
                     ignore_index=True
                 )
-                st.success(f"✅ 已成功新增球友：{new_name} (開始日: {new_start_date}, 系統自動計算剩餘 {calculated_times} 次)")
+                st.success(f"✅已成功新增球友：{new_name} (開始日: {new_start_date}, 系統自動計算剩餘 {calculated_times} 次)")
                 st.rerun() 
     st.divider()
 
@@ -301,7 +301,7 @@ with tab3:
             del_mem_opts.append(f"{idx} | {row.get('姓名','')} (開始日: {d_str})")
             
         sel_mem_del = st.selectbox("請選擇欲刪除項目：", ["請選擇..."] + del_mem_opts)
-        if st.button("🚨確認刪除"):
+        if st.button("❌確認刪除"):
             if sel_mem_del != "請選擇...":
                 mem_del_idx = int(sel_mem_del.split(" | ")[0])
                 st.session_state.members_df = st.session_state.members_df.drop(mem_del_idx).reset_index(drop=True)
@@ -309,9 +309,9 @@ with tab3:
                 st.rerun()
     
     def update_status(times):
-        if times <= 0: return "🛑已結束"
-        elif times <= 3: return "⚠️提醒繳費"
-        else: return "✅進行中"
+        if times <= 0: return "⛔已結束"
+        elif times <= 2: return "⚠️剩餘2次，可提醒繳費"
+        else: return "🟢進行中"
 
     display_df = st.session_state.members_df.copy()
     display_df['狀態提醒'] = display_df['剩餘次數'].apply(update_status)
