@@ -132,7 +132,7 @@ with tab2:
             t_handler = st.selectbox("經手人", handler_options)
             t_note = st.text_input("備註")
             
-        submitted = st.form_submit_button("➕ 確認新增這筆帳目", use_container_width=True)
+        submitted = st.form_submit_button("➕確認新增這筆帳目", use_container_width=True)
         if submitted:
             if not t_item:
                 st.warning("⚠️請填寫「項目」欄位！")
@@ -150,7 +150,7 @@ with tab2:
                 st.success(f"✅已成功記帳：{t_type} - {t_item} ${t_amount}")
                 st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
 
-    st.subheader("📝 收支總表")
+    st.subheader("📝收支總表")
 
     # 刪除收支紀錄功能
     with st.expander("🗑️刪除錯誤的收支紀錄"):
@@ -171,7 +171,7 @@ with tab2:
         display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
     else:
         display_df = st.session_state.trans_df
-        st.warning(f"⚠️ 找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
+        st.warning(f"⚠️找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
 
     for col in display_df.select_dtypes(include=['object']).columns:
         display_df[col] = display_df[col].fillna("")
@@ -211,7 +211,7 @@ with tab1:
             venue_expenses = current_trans[(current_trans['類別'] == '支出') & (current_trans['項目'] == '場地費')]['$']
             weekly_venue_fee = venue_expenses.mode()[0] if not venue_expenses.empty else 760
         else:
-            weekly_venue_fee = 760
+            weekly_venue_fee = 380 * 2
         safe_buffer = weekly_venue_fee * 2 
 
         # 季繳預留金
@@ -264,7 +264,7 @@ with tab3:
         with col_m3:
             new_start_date = st.date_input("📅 季繳開始日期", datetime.today(), help="⚠️僅能選擇禮拜二")
             
-        submit_new_member = st.form_submit_button("確認新增名單", use_container_width=True)
+        submit_new_member = st.form_submit_button("➕確認新增名單", use_container_width=True)
         
         if submit_new_member:
             if not new_name.strip():
