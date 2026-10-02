@@ -269,7 +269,7 @@ with tab3:
             elif new_start_date.weekday() != 1:
                 weekdays_zh = ["一", "二", "三", "四", "五", "六", "日"]
                 wrong_day = weekdays_zh[new_start_date.weekday()]
-                st.error(f"⚠ 【日期錯誤】「季繳開始日期」必須為星期二！您選擇的 {new_start_date.strftime('%Y-%m-%d')} 是星期{wrong_day}。")
+                st.error(f"⚠️【日期錯誤】「季繳開始日期」必須為星期二！您選擇的 {new_start_date.strftime('%Y-%m-%d')} 是星期{wrong_day}。")
             else:
                 # 針對新名單套用公式
                 today_dt = pd.to_datetime(datetime.today().date())
@@ -338,4 +338,35 @@ with tab3:
     if not edited_members.equals(display_df):
         st.session_state.members_df = edited_members[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
         st.rerun()
+
+
+# ------------------------------------------
+# 分頁 4：俱樂部資訊 (收費標準)
+# ------------------------------------------
+with tab4:
+    st.subheader("ℹ️球團資訊")
+    
+    # * 項目符號, **粗體**
+    st.markdown("""
+    ### 💰收費標準
+    * **季繳球友：** 預繳10次共2200元
+    * **臨打球友：** 每次250元、只打1小時每次150元
+    * **羽毛球費：** 每桶610元
+    
+    ### 球團福利
+    * **當月壽星優惠：** 只要為打過一次的球友，便可享一次臨打免費+飲料任挑
+       
+    ### 🧑‍💼預估設定
+    * **總結餘金額：** 收入-支出
+    * **季繳預留金：** 預留2周場地費，預設租借2個場地
+    * **可挪用金額：** 總結餘金額-季繳預留金
+
+    ### 📈統計結果【2026.4~2026.9】
+    * 每次開團平均人次：12.43人
+    * 每次開團場地平均使用時數：3.78hrs
+    * 每次開團分攤時數：0.314hr/人場
+    """)
+    
+    st.info("💡提示：如需修改以上內容，請通知團主")
+
 
