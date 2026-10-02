@@ -132,7 +132,7 @@ with tab2:
             t_handler = st.selectbox("經手人", handler_options)
             t_note = st.text_input("備註")
             
-        submitted = st.form_submit_button("➕確認新增這筆帳目", use_container_width=True)
+        submitted = st.form_submit_button("➕確認新增帳目", use_container_width=True)
         if submitted:
             if not t_item:
                 st.warning("⚠️請填寫「項目」欄位！")
@@ -258,13 +258,13 @@ with tab3:
     with st.form("add_member_form"):
         col_m1, col_m2, col_m3 = st.columns(3)
         with col_m1:
-            new_name = st.text_input("👤 姓名", placeholder="必填")
+            new_name = st.text_input("👤姓名", placeholder="必填")
         with col_m2:
-            new_date = st.date_input("📅 繳費日期", datetime.today())
+            new_date = st.date_input("📅繳費日期", datetime.today())
         with col_m3:
-            new_start_date = st.date_input("📅 季繳開始日期", datetime.today(), help="⚠️僅能選擇禮拜二")
+            new_start_date = st.date_input("📅季繳開始日期", datetime.today(), help="⚠️僅能選擇禮拜二")
             
-        submit_new_member = st.form_submit_button("➕確認新增名單", use_container_width=True)
+        submit_new_member = st.form_submit_button("➕確認新增人員", use_container_width=True)
         
         if submit_new_member:
             if not new_name.strip():
@@ -352,7 +352,7 @@ with tab3:
 with tab4:
     st.subheader("ℹ️後台資訊")
 
-    st.info("💡提示：如需修改以上內容，請通知團主")
+    st.info("💡提示：如需修改以下內容，請通知團主")
     
     # * 項目符號, **粗體**
     st.markdown("""
