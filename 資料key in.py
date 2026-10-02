@@ -267,7 +267,7 @@ with tab3:
         use_container_width=True,
         num_rows="dynamic",
         hide_index=True,
-        key="members_editor"
+        key="members_editor",
         column_config={
             "繳費日期": st.column_config.DateColumn("繳費日期", format="YYYY-MM-DD"),
             "季繳開始日期": st.column_config.DateColumn("季繳開始日期", format="YYYY-MM-DD"),
