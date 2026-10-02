@@ -138,7 +138,7 @@ with tab2:
     else:
         display_df = st.session_state.trans_df
         st.warning(f"⚠️ 找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
-   
+        
     edited_trans = st.data_editor(
         display_df, 
         use_container_width=True, 
@@ -146,11 +146,14 @@ with tab2:
         hide_index=True,
         key="trans_editor",
         column_config={
-            "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD")
+            "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD"),
+            "類別": st.column_config.SelectboxColumn("類別", options=["收入", "支出"], required=True),
+            "項目": st.column_config.SelectboxColumn("項目", options=item_options),
+            "經手人": st.column_config.SelectboxColumn("經手人", options=handler_options)
         }
-    )
+    )   
     
-    # 若您在表格上做了任何修改，將新資料存回系統並重新整理重算總結餘
+    # 表格上若做了任何修改，將新資料存回系統並重新整理重算總結餘
     if not edited_trans.equals(display_df):
         st.session_state.trans_df = edited_trans
         st.rerun()
@@ -199,8 +202,13 @@ with tab1:
                              color='類別', color_discrete_map={'收入':'#28a745', '支出':'#dc3545'})
             st.plotly_chart(fig_pie, use_container_width=True)
         with col2:
-            daily_summary = current_trans.groupby(['日期', '類別'])['$'].sum().reset_index()
-            fig_bar = px.bar(daily_summary, x='日期', y='$', color='類別', barmode='group', title="每日收支變化",
+            plot_df = current_trans.dropna(subset=['日期']).copy()
+            plot_df['月份'] = plot_df['日期'].dt.strftime('%Y-%m')
+            
+            # 改為用「月份」與「類別」進行群組加總
+            monthly_summary = plot_df.groupby(['月份', '類別'])['$'].sum().reset_index()
+            
+            fig_bar = px.bar(monthly_summary, x='月份', y='$', color='類別', barmode='group', title="每月收支變化",
                              color_discrete_map={'收入':'#28a745', '支出':'#dc3545'})
             st.plotly_chart(fig_bar, use_container_width=True)
 
