@@ -4,8 +4,8 @@ import plotly.express as px
 from datetime import datetime
 import numpy as np
 
-st.set_page_config(page_title="哈蜜瓜收支表儀表板", page_icon="🍈", layout="wide")
-st.title("🍈 哈蜜瓜收支與季繳管理儀表板")
+st.set_page_config(page_title="哈蜜瓜收支表", page_icon="🍈", layout="wide")
+st.title("🍈哈蜜瓜收支與季繳管理")
 
 # ==========================================
 # 1. 讀取 Excel 檔案
@@ -15,7 +15,7 @@ def load_excel():
     df_trans = pd.read_excel("For Streamlit.xlsx", sheet_name='每周收支')
     df_members = pd.read_excel("For Streamlit.xlsx", sheet_name='季繳追蹤')
     
-# 🌟 解決 KeyError 的關鍵：自動清除所有欄位名稱前後的隱藏空白字元
+# 自動清除所有欄位名稱前後的隱藏空白字元
     df_trans.columns = df_trans.columns.str.strip()
     df_members.columns = df_members.columns.str.strip()
    
@@ -33,7 +33,7 @@ except Exception as e:
 if 'members_df' not in st.session_state:
     df_mem = df_members.dropna(subset=['姓名']).copy()
     
-    # ✨ 確保日期格式正確
+    # 確保日期格式正確
     df_mem['季繳開始日期'] = pd.to_datetime(df_mem['季繳開始日期'], errors='coerce')
     today = pd.to_datetime(datetime.today().date())
     days_diff = (today - df_mem['季繳開始日期']).dt.days
@@ -59,9 +59,8 @@ if 'trans_df' not in st.session_state:
 current_trans = st.session_state.trans_df
 
 # ------------------------------------------
-# ✨ 動態產生下拉選單
+# 動態產生下拉選單
 # ------------------------------------------
-# 項目選單
 item_options = ["場地費", "臨打", "季繳", "羽毛球", "活動費", "其他"]
 if '項目' in current_trans.columns:
     for x in current_trans['項目'].dropna().unique():
@@ -78,15 +77,15 @@ if '經手人' in current_trans.columns:
 # ==========================================
 # 3. 建立網頁分頁
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["💰 記帳與收支狀況", "📊 收支概況", "🏸 季繳追蹤"])
+tab1, tab2, tab3 = st.tabs(["💰收支概況", "📊記帳與管理", "🏸季繳追蹤"])
 
 # ------------------------------------------
-# 分頁 1：財務與記帳 (加入新增帳目表單)
+# 分頁 2：記帳與管理
 # ------------------------------------------
-with tab1:
+with tab2:
     
     # 手動輸入流水帳表單
-    st.subheader("✍️ 新增收支紀錄")
+    st.subheader("✍️新增收支紀錄")
     with st.form("add_transaction_form", clear_on_submit=True):
         col_f1, col_f2, col_f3 = st.columns(3)
         with col_f1:
@@ -157,9 +156,9 @@ with tab1:
         st.rerun()
 
 # ------------------------------------------
-# 分頁 2：視覺化圖表
+# 分頁 1：Summary
 # ------------------------------------------
-with tab2:
+with tab1:
     st.subheader("💰 總財務概況")
     
     if '類別' in current_trans.columns and '$' in current_trans.columns:
@@ -182,15 +181,15 @@ with tab2:
 
         col1, col2, col3 = st.columns(3)
         with col2:
-            st.metric("💵 總結餘金額", f"${net_balance:,.0f}")
+            st.metric("💵總結餘金額", f"${net_balance:,.0f}")
         with col1:
-            st.success(f"### 🛡️ 可挪用金額: **${safe_buffer:,.0f}**")
+            st.success(f"### 🛡️可挪用金額: **${safe_buffer:,.0f}**")
         with col3:
-            st.metric("💳 季繳預留金", f"${quarterly_reserve:,.0f}")
+            st.metric("💳季繳預留金", f"${quarterly_reserve:,.0f}")
             
     st.divider()
     
-    st.subheader("📊 收支圖表分析")
+    st.subheader("📊收支圖表分析")
     
     if '類別' in current_trans.columns and '$' in current_trans.columns and '日期' in current_trans.columns:
         col1, col2 = st.columns(2)
@@ -209,7 +208,7 @@ with tab2:
 # 分頁 3：季繳剩餘次數追蹤
 # ------------------------------------------
 with tab3:
-    st.subheader("➕ 新增季繳人員")
+    st.subheader("➕新增季繳人員")
     
     with st.form("add_member_form"):
         col_m1, col_m2, col_m3 = st.columns(3)
@@ -250,27 +249,27 @@ with tab3:
                 st.rerun() 
     st.divider()
 
-    st.subheader("📋 季繳追蹤清單")
+    st.subheader("📋季繳追蹤清單")
     
     # 刪除季繳球友功能
-    with st.expander("🗑️️ 名單編輯"):
+    with st.expander("🗑️️名單編輯"):
         del_mem_opts = []
         for idx, row in st.session_state.members_df.iterrows():
             d_str = row['季繳開始日期'].strftime('%Y-%m-%d') if pd.notnull(row['季繳開始日期']) else '無日期'
             del_mem_opts.append(f"{idx} | {row.get('姓名','')} (開始日: {d_str})")
             
         sel_mem_del = st.selectbox("請選擇欲刪除項目：", ["請選擇..."] + del_mem_opts)
-        if st.button("🚨 確認刪除"):
+        if st.button("🚨確認刪除"):
             if sel_mem_del != "請選擇...":
                 mem_del_idx = int(sel_mem_del.split(" | ")[0])
                 st.session_state.members_df = st.session_state.members_df.drop(mem_del_idx).reset_index(drop=True)
-                st.success("✅ 已成功刪除！")
+                st.success("✅已成功刪除！")
                 st.rerun()
     
     def update_status(times):
-        if times <= 0: return "🛑 已結束"
-        elif times <= 3: return "⚠️ 提醒繳費"
-        else: return "✅ 進行中"
+        if times <= 0: return "🛑已結束"
+        elif times <= 3: return "⚠️提醒繳費"
+        else: return "✅進行中"
 
     display_df = st.session_state.members_df.copy()
     display_df['狀態提醒'] = display_df['剩餘次數'].apply(update_status)
@@ -298,5 +297,4 @@ with tab3:
     if not edited_members.equals(display_df):
         st.session_state.members_df = edited_members[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
         st.rerun()
-
 
