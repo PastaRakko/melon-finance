@@ -11,8 +11,8 @@ st.title("🍈 哈蜜瓜收支與季繳管理儀表板")
 # ==========================================
 @st.cache_data
 def load_excel():
-    df_trans = pd.read_excel("哈蜜瓜收支表.xlsx", sheet_name=0)
-    df_members = pd.read_excel("哈蜜瓜收支表.xlsx", sheet_name=2)
+    df_trans = pd.read_excel("For Streamlit.xlsx", sheet_name='每周收支')
+    df_members = pd.read_excel("For Streamlit.xlsx", sheet_name='季繳追蹤')
     return df_trans, df_members
 
 try:
@@ -61,9 +61,9 @@ with tab1:
         # 安全挪用款
         if '項目' in current_trans.columns:
             venue_expenses = current_trans[(current_trans['類別'] == '支出') & (current_trans['項目'] == '場地費')]['$']
-            weekly_venue_fee = venue_expenses.mode()[0] if not venue_expenses.empty else 1520
+            weekly_venue_fee = venue_expenses.mode()[0] if not venue_expenses.empty else 760
         else:
-            weekly_venue_fee = 1520
+            weekly_venue_fee = 760
         safe_buffer = weekly_venue_fee * 2 
 
         # 季繳預留金
@@ -76,8 +76,8 @@ with tab1:
 
         col1, col2, col3 = st.columns(3)
         col1.metric("💵 總結餘現金", f"${net_balance:,.0f}")
-        col2.metric("🛡️ 安全挪用款", f"${safe_buffer:,.0f}", f"單週 ${weekly_venue_fee:.0f}")
-        col3.metric("💳 季繳預留金", f"${quarterly_reserve:,.0f}", f"共剩 {total_remaining} 次未打")
+        col3.metric("🛡️ 安全挪用款", f"${safe_buffer:,.0f}", f"單週 ${weekly_venue_fee:.0f}")
+        col2.metric("💳 季繳預留金", f"${quarterly_reserve:,.0f}", f"共剩 {total_remaining} 次未打")
         
         if available_cash >= 0:
             st.success(f"### 🎉 實際可動用盈餘： **${available_cash:,.0f}**")
@@ -94,10 +94,10 @@ with tab1:
             t_date = st.date_input("📅 日期", datetime.today())
             t_type = st.selectbox("類別", ["收入", "支出"])
         with col_f2:
-            t_item = st.text_input("項目 (如: 臨打, 場地費, 羽球)", placeholder="必填")
-            t_amount = st.number_input("金額 ($)", min_value=0, step=50)
+            t_item = st.text_input("項目 (如: 臨打, 場地費, 羽毛球, 季繳, 活動費, 其他)", placeholder="必填")
+            t_amount = st.number_input("金額 ($)", min_value=0, step=1)
         with col_f3:
-            t_handler = st.text_input("經手人", placeholder="如: 櫃台, 妙")
+            t_handler = st.text_input("經手人", placeholder="如: 櫃台, 妙, 齊")
             t_note = st.text_input("備註")
             
         submitted = st.form_submit_button("➕ 確認新增這筆帳目", use_container_width=True)
