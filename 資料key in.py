@@ -172,6 +172,9 @@ with tab2:
     else:
         display_df = st.session_state.trans_df
         st.warning(f"⚠️ 找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
+
+    for col in display_df.select_dtypes(include=['object']).columns:
+        display_df[col] = display_df[col].fillna("")
         
     edited_trans = st.data_editor(
         display_df, 
@@ -315,6 +318,9 @@ with tab3:
 
     display_df = st.session_state.members_df.copy()
     display_df['狀態提醒'] = display_df['剩餘次數'].apply(update_status)
+
+    for col in display_df.select_dtypes(include=['object']).columns:
+        display_df[col] = display_df[col].fillna("")
 
     def highlight_zero(row):
         if row['剩餘次數'] <= 0:
