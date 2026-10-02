@@ -249,17 +249,14 @@ with tab2:
                     st.rerun()
             with col_btn2:
                 if st.button("🔙取消刪除", key="cancel_del_trans", use_container_width=True):
-                    # 清除表格的暫存狀態，直接重置勾選框
-                    if "trans_editor" in st.session_state:
-                        del st.session_state["trans_editor"]
-                    st.rerun()
+                   st.session_state["trans_editor"] = {"edited_rows": {}, "added_rows": [], "deleted_rows": []}
+                   st.rerun()
         else:
             orig_check = display_df.drop(columns=["🗑️刪除"])
             edit_check = edited_trans.drop(columns=["🗑️刪除"])
             if not edit_check.equals(orig_check):
                 st.session_state.trans_df = edit_check
                 st.rerun()
-
 
 # ------------------------------------------
 # 分頁 3：🏸季繳追蹤
@@ -355,8 +352,7 @@ with tab3:
             with col_btn2:
                 if st.button("🔙取消刪除", key="cancel_del_mem", use_container_width=True):
                     # 清除表格的暫存狀態，直接重置勾選框
-                    if "members_editor" in st.session_state:
-                        del st.session_state["members_editor"]
+                    st.session_state["members_editor"] = {"edited_rows": {}, "added_rows": [], "deleted_rows": []}
                     st.rerun()
         else:
             orig_check = display_df.drop(columns=["🗑️刪除"])
