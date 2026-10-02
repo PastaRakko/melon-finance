@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 import numpy as np
+from github import Github
 
 st.set_page_config(page_title="哈蜜瓜收支表", page_icon="🍈", layout="wide")
 st.title("🍈哈蜜瓜收支與季繳管理")
@@ -78,6 +79,39 @@ if '經手人' in current_trans.columns:
 # 3. 建立網頁分頁
 # ==========================================
 tab1, tab2, tab3 = st.tabs(["💰收支概況", "📊記帳與管理", "🏸季繳追蹤"])
+
+# ==========================================
+# 💾 左側邊欄：一鍵雲端存檔
+# ==========================================
+with st.sidebar:
+    st.header("☁️ 雲端同步存檔")
+    st.info("💡 修改完資料後，請務必點擊下方按鈕，系統會自動將最新進度覆蓋至 GitHub。")
+    
+    if st.button("🚀 一鍵同步存檔至 GitHub", use_container_width=True):
+        with st.spinner("正在將資料同步至 GitHub，請稍候..."):
+            try:
+                # 1. 產生最新的 Excel 檔案內容到記憶體
+                output = io.BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    st.session_state.trans_df.to_excel(writer, sheet_name='收支明細', index=False)
+                    st.session_state.members_df.to_excel(writer, sheet_name='季繳名單', index=False)
+                excel_data = output.getvalue()
+                
+                # 2. 呼叫 Secrets 裡面的鑰匙連線至 GitHub
+                g = Github(st.secrets["GITHUB_TOKEN"])
+                repo = g.get_repo(st.secrets["REPO_NAME"])
+                
+                # 3. 取得原本的檔案並進行覆蓋
+                file_path = "哈蜜瓜收支表.xlsx"
+                contents = repo.get_contents(file_path)
+                
+                commit_message = f"自動存檔: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                repo.update_file(contents.path, commit_message, excel_data, contents.sha)
+                
+                st.success("✅ 存檔成功！資料已永久同步。")
+            except Exception as e:
+                st.error(f"❌ 存檔失敗：請檢查 Secrets 設定或 Token 權限。錯誤細節：{e}")
+
 
 # ------------------------------------------
 # 分頁 2：記帳與管理
