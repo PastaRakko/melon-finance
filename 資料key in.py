@@ -117,83 +117,83 @@ with st.sidebar:
 # 分頁 2：記帳與管理
 # ------------------------------------------
 with tab2:
-    
+   col_left, col_right = st.columns([1, 2]) 
     # 手動輸入流水帳表單
+    with col_left:
     st.subheader("✍️新增收支紀錄")
-    with st.form("add_transaction_form", clear_on_submit=True):
-        col_f1, col_f2, col_f3 = st.columns(3)
-        with col_f1:
-            t_date = st.date_input("📅 日期", datetime.today())
-            t_type = st.selectbox("類別", ["收入", "支出"])
-        with col_f2:
-            t_item = st.selectbox("項目", item_options)
-            t_amount = st.number_input("金額 ($)", min_value=0, step=1)
-        with col_f3:
-            t_handler = st.selectbox("經手人", handler_options)
-            t_note = st.text_input("備註")
-            
-        submitted = st.form_submit_button("➕確認新增帳目", use_container_width=True)
-        if submitted:
-            if not t_item:
-                st.warning("⚠️請填寫「項目」欄位！")
-            else:
-                # 建立新資料列並附加到現有的 session_state
-                new_record = pd.DataFrame([{
-                    "日期": pd.to_datetime(t_date),
-                    "類別": t_type,
-                    "項目": t_item,
-                    "$": t_amount,
-                    "經手人": t_handler,
-                    "備註": t_note
-                }])
-                st.session_state.trans_df = pd.concat([st.session_state.trans_df, new_record], ignore_index=True)
-                st.success(f"✅已成功記帳：{t_type} - {t_item} ${t_amount}")
-                st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
-
+        with st.form("add_transaction_form", clear_on_submit=True):
+            col_f1, col_f2, col_f3 = st.columns(3)
+            with col_f1:
+                t_date = st.date_input("📅 日期", datetime.today())
+                t_type = st.selectbox("類別", ["收入", "支出"])
+            with col_f2:
+                t_item = st.selectbox("項目", item_options)
+                t_amount = st.number_input("金額 ($)", min_value=0, step=1)
+            with col_f3:
+                t_handler = st.selectbox("經手人", handler_options)
+                t_note = st.text_input("備註")
+                
+            submitted = st.form_submit_button("➕確認新增帳目", use_container_width=True)
+            if submitted:
+                if not t_item:
+                    st.warning("⚠️請填寫「項目」欄位！")
+                else:
+                    # 建立新資料列並附加到現有的 session_state
+                    new_record = pd.DataFrame([{
+                        "日期": pd.to_datetime(t_date),
+                        "類別": t_type,
+                        "項目": t_item,
+                        "$": t_amount,
+                        "經手人": t_handler,
+                        "備註": t_note
+                    }])
+                    st.session_state.trans_df = pd.concat([st.session_state.trans_df, new_record], ignore_index=True)
+                    st.success(f"✅已成功記帳：{t_type} - {t_item} ${t_amount}")
+                    st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
+    with col_right:
     st.subheader("📝收支總表")
 
-    # 刪除收支紀錄功能
-    with st.expander("🗑️刪除錯誤的收支紀錄"):
-        del_opts = []
-        for idx, row in st.session_state.trans_df.iterrows():
-            d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
-            del_opts.append(f"{idx} | {d_str} - {row.get('類別','')} : {row.get('項目','')} (${row.get('$','')})")
+          with st.expander("🗑️刪除錯誤的收支紀錄"):
+            del_opts = []
+            for idx, row in st.session_state.trans_df.iterrows():
+                d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
+                del_opts.append(f"{idx} | {d_str} - {row.get('類別','')} : {row.get('項目','')} (${row.get('$','')})")
+            
+            sel_del = st.selectbox("請選擇要刪除的紀錄：", ["請選擇..."] + del_opts)
+            if st.button("❌確認刪除這筆收支"):
+                if sel_del != "請選擇...":
+                    del_idx = int(sel_del.split(" | ")[0])
+                    st.session_state.trans_df = st.session_state.trans_df.drop(del_idx).reset_index(drop=True)
+                    st.success("✅已成功刪除該筆紀錄！")
+                    st.rerun()
         
-        sel_del = st.selectbox("請選擇要刪除的紀錄：", ["請選擇..."] + del_opts)
-        if st.button("❌確認刪除這筆收支"):
-            if sel_del != "請選擇...":
-                del_idx = int(sel_del.split(" | ")[0])
-                st.session_state.trans_df = st.session_state.trans_df.drop(del_idx).reset_index(drop=True)
-                st.success("✅已成功刪除該筆紀錄！")
-                st.rerun()
+        if "日期" in st.session_state.trans_df.columns:
+            display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
+        else:
+            display_df = st.session_state.trans_df
+            st.warning(f"⚠️找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
     
-    if "日期" in st.session_state.trans_df.columns:
-        display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
-    else:
-        display_df = st.session_state.trans_df
-        st.warning(f"⚠️找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
-
-    for col in display_df.select_dtypes(include=['object']).columns:
-        display_df[col] = display_df[col].fillna("")
+        for col in display_df.select_dtypes(include=['object']).columns:
+            display_df[col] = display_df[col].fillna("")
+            
+        edited_trans = st.data_editor(
+            display_df, 
+            use_container_width=True, 
+            num_rows="fixed",
+            hide_index=True,
+            key="trans_editor",
+            column_config={
+                "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD"),
+                "類別": st.column_config.SelectboxColumn("類別", options=["收入", "支出"], required=True),
+                "項目": st.column_config.SelectboxColumn("項目", options=item_options),
+                "經手人": st.column_config.SelectboxColumn("經手人", options=handler_options)
+            }
+        )   
         
-    edited_trans = st.data_editor(
-        display_df, 
-        use_container_width=True, 
-        num_rows="fixed",
-        hide_index=True,
-        key="trans_editor",
-        column_config={
-            "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD"),
-            "類別": st.column_config.SelectboxColumn("類別", options=["收入", "支出"], required=True),
-            "項目": st.column_config.SelectboxColumn("項目", options=item_options),
-            "經手人": st.column_config.SelectboxColumn("經手人", options=handler_options)
-        }
-    )   
-    
-    # 表格上若做了任何修改，將新資料存回系統並重新整理重算總結餘
-    if not edited_trans.equals(display_df):
-        st.session_state.trans_df = edited_trans
-        st.rerun()
+        # 表格上若做了任何修改，將新資料存回系統並重新整理重算總結餘
+        if not edited_trans.equals(display_df):
+            st.session_state.trans_df = edited_trans
+            st.rerun()
 
 # ------------------------------------------
 # 分頁 1：Summary
