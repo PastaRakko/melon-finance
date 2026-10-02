@@ -146,7 +146,7 @@ with tab1:
                 st.success(f"✅ 已成功記帳：{t_type} - {t_item} ${t_amount}")
                 st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
 
-    st.subheader("📝 每週收支流水帳")
+    st.subheader("📝 每週收支總表")
     if "日期" in st.session_state.trans_df.columns:
         display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
     else:
