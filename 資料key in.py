@@ -84,11 +84,11 @@ tab1, tab2, tab3 = st.tabs(["💰收支概況", "📊記帳與管理", "🏸季�
 # 💾 左側邊欄：一鍵雲端存檔
 # ==========================================
 with st.sidebar:
-    st.header("☁️ 雲端同步存檔")
-    st.info("💡 修改完資料後，請務必點擊下方按鈕，系統會自動將最新進度覆蓋至 GitHub。")
+    st.header("☁️雲端同步存檔")
+    st.info("💡修改完資料後，請務必點擊下方按鈕，資料才會更新 & 儲存")
     
-    if st.button("🚀 一鍵同步存檔至 GitHub", use_container_width=True):
-        with st.spinner("正在將資料同步至 GitHub，請稍候..."):
+    if st.button("確認存檔", use_container_width=True):
+        with st.spinner("⌛正在上傳資料中，請稍候..."):
             try:
                 # 1. 產生最新的 Excel 檔案內容到記憶體
                 output = io.BytesIO()
@@ -108,9 +108,9 @@ with st.sidebar:
                 commit_message = f"自動存檔: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
                 repo.update_file(contents.path, commit_message, excel_data, contents.sha)
                 
-                st.success("✅ 存檔成功！資料已永久同步。")
+                st.success("✅存檔成功！")
             except Exception as e:
-                st.error(f"❌ 存檔失敗：請檢查 Secrets 設定或 Token 權限。錯誤細節：{e}")
+                st.error(f"❌存檔失敗：請檢查 Secrets 設定或 Token 權限。錯誤細節：{e}")
 
 
 # ------------------------------------------
