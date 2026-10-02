@@ -146,17 +146,18 @@ with tab1:
                 st.success(f"✅ 已成功記帳：{t_type} - {t_item} ${t_amount}")
                 st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
 
-    st.subheader("📝 每週收支總表")
+    st.subheader("📝 收支總表")
     if "日期" in st.session_state.trans_df.columns:
         display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
     else:
         display_df = st.session_state.trans_df
         st.warning(f"⚠️ 找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
-    # ✨ 使用 st.data_editor 讓表格可以直接雙擊修改
+   
     edited_trans = st.data_editor(
         display_df, 
         use_container_width=True, 
-        num_rows="dynamic", # 開啟此設定，您甚至可以直接在表格最下方新增一列，或選取整列按 Delete 刪除！
+        num_rows="dynamic",
+        hide_index=True,
         key="trans_editor",
         column_config={
             "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD")
