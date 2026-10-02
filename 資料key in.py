@@ -117,90 +117,83 @@ with st.sidebar:
 # 分頁 2：記帳與管理
 # ------------------------------------------
 with tab2:
-    col_left, col_right = st.columns([1, 2]) 
+    
     # 手動輸入流水帳表單
-    with col_left:
-        st.subheader("✍️新增收支紀錄")
-        with st.form("add_transaction_form", clear_on_submit=True):
+    st.subheader("✍️新增收支紀錄")
+    with st.form("add_transaction_form", clear_on_submit=True):
+        col_f1, col_f2, col_f3 = st.columns(3)
+        with col_f1:
             t_date = st.date_input("📅 日期", datetime.today())
             t_type = st.selectbox("類別", ["收入", "支出"])
+        with col_f2:
             t_item = st.selectbox("項目", item_options)
             t_amount = st.number_input("金額 ($)", min_value=0, step=1)
+        with col_f3:
             t_handler = st.selectbox("經手人", handler_options)
             t_note = st.text_input("備註")
-                
-            submitted = st.form_submit_button("➕確認新增帳目", use_container_width=True)
-            if submitted:
-                if not t_item:
-                    st.warning("⚠️請填寫「項目」欄位！")
-                else:
-                    new_record = pd.DataFrame([{
-                        "日期": pd.to_datetime(t_date),
-                        "類別": t_type,
-                        "項目": t_item,
-                        "$": t_amount,
-                        "經手人": t_handler,
-                        "備註": t_note
-                    }])
-                    st.session_state.trans_df = pd.concat([st.session_state.trans_df, new_record], ignore_index=True)
-                    st.success(f"✅已成功記帳：{t_type} - {t_item} ${t_amount}")
-                    st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
-    with col_right:
-        st.subheader("📝收支總表")
+            
+        submitted = st.form_submit_button("➕確認新增帳目", use_container_width=True)
+        if submitted:
+            if not t_item:
+                st.warning("⚠️請填寫「項目」欄位！")
+            else:
+                # 建立新資料列並附加到現有的 session_state
+                new_record = pd.DataFrame([{
+                    "日期": pd.to_datetime(t_date),
+                    "類別": t_type,
+                    "項目": t_item,
+                    "$": t_amount,
+                    "經手人": t_handler,
+                    "備註": t_note
+                }])
+                st.session_state.trans_df = pd.concat([st.session_state.trans_df, new_record], ignore_index=True)
+                st.success(f"✅已成功記帳：{t_type} - {t_item} ${t_amount}")
+                st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
 
-        with st.expander("🗑️刪除錯誤的收支紀錄"):
-            del_opts = []
-            for idx, row in st.session_state.trans_df.iterrows():
-                d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
-                del_opts.append(f"{idx} | {d_str} - {row.get('類別','')} : {row.get('項目','')} (${row.get('$','')})")
-            
-            sel_del = st.selectbox("請選擇要刪除的紀錄：", ["請選擇..."] + del_opts)
-            if st.button("❌確認刪除這筆收支"):
-                if sel_del != "請選擇...":
-                    del_idx = int(sel_del.split(" | ")[0])
-                    st.session_state.trans_df = st.session_state.trans_df.drop(del_idx).reset_index(drop=True)
-                    st.success("✅已成功刪除該筆紀錄！")
-                    st.rerun()
+    st.subheader("📝收支總表")
+
+    # 刪除收支紀錄功能
+    with st.expander("🗑️刪除錯誤的收支紀錄"):
+        del_opts = []
+        for idx, row in st.session_state.trans_df.iterrows():
+            d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
+            del_opts.append(f"{idx} | {d_str} - {row.get('類別','')} : {row.get('項目','')} (${row.get('$','')})")
         
-        if "日期" in st.session_state.trans_df.columns:
-            display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
-        else:
-            display_df = st.session_state.trans_df
-            st.warning(f"⚠️找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
-    
-        for col in display_df.select_dtypes(include=['object']).columns:
-            display_df[col] = display_df[col].fillna("")
-            
-        display_df.insert(0, "🗑️ 刪除", False)
-            
-        edited_trans = st.data_editor(
-            display_df, 
-            use_container_width=True, 
-            num_rows="fixed",
-            hide_index=True,
-            key="trans_editor",
-            column_config={
-                "🗑️刪除": st.column_config.CheckboxColumn("刪除", default=False, width="small"),
-                "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD"),
-                "類別": st.column_config.SelectboxColumn("類別", options=["收入", "支出"], required=True),
-                "項目": st.column_config.SelectboxColumn("項目", options=item_options),
-                "經手人": st.column_config.SelectboxColumn("經手人", options=handler_options)
-            }
-        )
-        
-        # ✨ 處理邏輯：如果有人把「刪除」打勾了
-        if edited_trans["🗑️刪除"].any():
-            # 保留沒有打勾的資料，並把「🗑️刪除」這欄拿掉後存回系統
-            st.session_state.trans_df = edited_trans[~edited_trans["🗑️ 刪除"]].drop(columns=["🗑️ 刪除"]).reset_index(drop=True)
-            st.success("✅ 已成功刪除勾選的紀錄！")
-            st.rerun()
-        else:
-            # 如果沒有打勾，比對是否有雙擊修改其他內容
-            orig_check = display_df.drop(columns=["🗑️ 刪除"])
-            edit_check = edited_trans.drop(columns=["🗑️ 刪除"])
-            if not edit_check.equals(orig_check):
-                st.session_state.trans_df = edit_check
+        sel_del = st.selectbox("請選擇要刪除的紀錄：", ["請選擇..."] + del_opts)
+        if st.button("❌確認刪除這筆收支"):
+            if sel_del != "請選擇...":
+                del_idx = int(sel_del.split(" | ")[0])
+                st.session_state.trans_df = st.session_state.trans_df.drop(del_idx).reset_index(drop=True)
+                st.success("✅已成功刪除該筆紀錄！")
                 st.rerun()
+    
+    if "日期" in st.session_state.trans_df.columns:
+        display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
+    else:
+        display_df = st.session_state.trans_df
+        st.warning(f"⚠️找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
+
+    for col in display_df.select_dtypes(include=['object']).columns:
+        display_df[col] = display_df[col].fillna("")
+        
+    edited_trans = st.data_editor(
+        display_df, 
+        use_container_width=True, 
+        num_rows="fixed",
+        hide_index=True,
+        key="trans_editor",
+        column_config={
+            "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD"),
+            "類別": st.column_config.SelectboxColumn("類別", options=["收入", "支出"], required=True),
+            "項目": st.column_config.SelectboxColumn("項目", options=item_options),
+            "經手人": st.column_config.SelectboxColumn("經手人", options=handler_options)
+        }
+    )   
+    
+    # 表格上若做了任何修改，將新資料存回系統並重新整理重算總結餘
+    if not edited_trans.equals(display_df):
+        st.session_state.trans_df = edited_trans
+        st.rerun()
 
 # ------------------------------------------
 # 分頁 1：Summary
@@ -260,83 +253,98 @@ with tab1:
 # 分頁 3：季繳剩餘次數追蹤
 # ------------------------------------------
 with tab3:
-    col_left, col_right = st.columns([1, 2])
-
-    with col_left:
-        st.subheader("➕新增季繳人員")
-        with st.form("add_member_form"):
+    st.subheader("➕新增季繳人員")
+    
+    with st.form("add_member_form"):
+        col_m1, col_m2, col_m3 = st.columns(3)
+        with col_m1:
             new_name = st.text_input("👤姓名", placeholder="必填")
+        with col_m2:
             new_date = st.date_input("📅繳費日期", datetime.today())
+        with col_m3:
             new_start_date = st.date_input("📅季繳開始日期", datetime.today(), help="⚠️僅能選擇禮拜二")
             
-            submit_new_member = st.form_submit_button("➕確認新增人員", use_container_width=True)
-            if submitted:
-                if m_name.strip() == "":
-                    st.error("⚠️ 姓名不能為空白！")
-                else:
-                    today = datetime.today()
-                    days_diff_new = (today.date() - m_start_date).days
-                    calculated_times = int(10 - np.ceil(days_diff_new / 7))
-                    
-                    new_mem = pd.DataFrame([{
-                        "姓名": m_name,
-                        "繳費日期": pd.to_datetime(m_pay_date),
-                        "季繳開始日期": pd.to_datetime(m_start_date),
-                        "剩餘次數": calculated_times
-                    }])
-                    st.session_state.members_df = pd.concat([st.session_state.members_df, new_mem], ignore_index=True)
-                    st.success(f"✅已新增球友：{m_name}")
-                    st.rerun()
-
-    with col_right:
-        st.subheader("📋季繳追蹤清單")
-    
-        with st.expander("🗑️️名單編輯"):
-            del_mem_opts = []
-            for idx, row in st.session_state.members_df.iterrows():
-                d_str = row['季繳開始日期'].strftime('%Y-%m-%d') if pd.notnull(row['季繳開始日期']) else '無日期'
-                del_mem_opts.append(f"{idx} | {row.get('姓名','')} (開始日: {d_str})")
-                
-            sel_mem_del = st.selectbox("請選擇欲刪除項目：", ["請選擇..."] + del_mem_opts)
-            if st.button("❌確認刪除"):
-                if sel_mem_del != "請選擇...":
-                    mem_del_idx = int(sel_mem_del.split(" | ")[0])
-                    st.session_state.members_df = st.session_state.members_df.drop(mem_del_idx).reset_index(drop=True)
-                    st.success("✅已成功刪除！")
-                    st.rerun()
+        submit_new_member = st.form_submit_button("➕確認新增人員", use_container_width=True)
         
-        def update_status(times):
-            if times <= 0: return "⛔已結束"
-            elif times <= 2: return "⚠️剩餘2次，可提醒繳費"
-            else: return "🟢進行中"
+        if submit_new_member:
+            if not new_name.strip():
+                st.warning("⚠️請填寫「姓名」欄位！")
+            elif new_start_date.weekday() != 1:
+                weekdays_zh = ["一", "二", "三", "四", "五", "六", "日"]
+                wrong_day = weekdays_zh[new_start_date.weekday()]
+                st.error(f"⚠️【日期錯誤】「季繳開始日期」必須為星期二！您選擇的 {new_start_date.strftime('%Y-%m-%d')} 是星期{wrong_day}。")
+            else:
+                # 針對新名單套用公式
+                today_dt = pd.to_datetime(datetime.today().date())
+                start_dt = pd.to_datetime(new_start_date)
+                days_diff_new = (today_dt - start_dt).days
+                calculated_times = int(10 - np.ceil(days_diff_new / 7))
+                
+                new_member_data = pd.DataFrame([{
+                    "姓名": new_name,
+                    "繳費日期": pd.to_datetime(new_date),
+                    "季繳開始日期": start_dt,
+                    "剩餘次數": calculated_times
+                }])
+                st.session_state.members_df = pd.concat(
+                    [st.session_state.members_df, new_member_data], 
+                    ignore_index=True
+                )
+                st.success(f"✅已成功新增球友：{new_name} (開始日: {new_start_date}, 系統自動計算剩餘 {calculated_times} 次)")
+                st.rerun() 
+    st.divider()
+
+    st.subheader("📋季繳追蹤清單")
     
-        display_df = st.session_state.members_df.copy()
-        display_df['狀態提醒'] = display_df['剩餘次數'].apply(update_status)
+    # 刪除季繳球友功能
+    with st.expander("🗑️️名單編輯"):
+        del_mem_opts = []
+        for idx, row in st.session_state.members_df.iterrows():
+            d_str = row['季繳開始日期'].strftime('%Y-%m-%d') if pd.notnull(row['季繳開始日期']) else '無日期'
+            del_mem_opts.append(f"{idx} | {row.get('姓名','')} (開始日: {d_str})")
+            
+        sel_mem_del = st.selectbox("請選擇欲刪除項目：", ["請選擇..."] + del_mem_opts)
+        if st.button("❌確認刪除"):
+            if sel_mem_del != "請選擇...":
+                mem_del_idx = int(sel_mem_del.split(" | ")[0])
+                st.session_state.members_df = st.session_state.members_df.drop(mem_del_idx).reset_index(drop=True)
+                st.success("✅已成功刪除！")
+                st.rerun()
     
-        for col in display_df.select_dtypes(include=['object']).columns:
-            display_df[col] = display_df[col].fillna("")
-    
-        def highlight_zero(row):
-            if row['剩餘次數'] <= 0:
-                return ['text-decoration: line-through; color: #888888;'] * len(row)
-            return [''] * len(row)
-    
-        edited_members = st.data_editor(
-            display_df,
-            use_container_width=True,
-            num_rows="fixed",
-            hide_index=True,
-            key="members_editor",
-            column_config={
-                "繳費日期": st.column_config.DateColumn("繳費日期", format="YYYY-MM-DD"),
-                "季繳開始日期": st.column_config.DateColumn("季繳開始日期", format="YYYY-MM-DD"),
-                "剩餘次數": st.column_config.NumberColumn("剩餘次數", format="%d")
-            }
-        )
-    
-        if not edited_members.equals(display_df):
-            st.session_state.members_df = edited_members[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
-            st.rerun()
+    def update_status(times):
+        if times <= 0: return "⛔已結束"
+        elif times <= 2: return "⚠️剩餘2次，可提醒繳費"
+        else: return "🟢進行中"
+
+    display_df = st.session_state.members_df.copy()
+    display_df['狀態提醒'] = display_df['剩餘次數'].apply(update_status)
+
+    for col in display_df.select_dtypes(include=['object']).columns:
+        display_df[col] = display_df[col].fillna("")
+
+    def highlight_zero(row):
+        if row['剩餘次數'] <= 0:
+            return ['text-decoration: line-through; color: #888888;'] * len(row)
+        return [''] * len(row)
+
+    edited_members = st.data_editor(
+        display_df,
+        use_container_width=True,
+        num_rows="fixed",
+        hide_index=True,
+        key="members_editor",
+        column_config={
+            "繳費日期": st.column_config.DateColumn("繳費日期", format="YYYY-MM-DD"),
+            "季繳開始日期": st.column_config.DateColumn("季繳開始日期", format="YYYY-MM-DD"),
+            "剩餘次數": st.column_config.NumberColumn("剩餘次數", format="%d")
+        }
+    )
+
+    # 若有修改，把新資料覆蓋回去 (排除掉自動產生的'狀態提醒'欄位)
+    if not edited_members.equals(display_df):
+        st.session_state.members_df = edited_members[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
+        st.rerun()
+
 
 # ------------------------------------------
 # 分頁 4：俱樂部資訊 (收費標準)
