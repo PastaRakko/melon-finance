@@ -85,21 +85,6 @@ tab1, tab2, tab3 = st.tabs(["💰 財務與記帳", "📊 收支圖表", "🏸 �
 # ------------------------------------------
 with tab1:
     st.subheader("💰 總財務概況")
-
-        # 刪除收支紀錄功能
-    with st.expander("🗑️ 刪除錯誤的收支紀錄"):
-        del_opts = []
-        for idx, row in st.session_state.trans_df.iterrows():
-            d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
-            del_opts.append(f"{idx} | {d_str} - {row.get('類別','')} : {row.get('項目','')} (${row.get('$','')})")
-        
-        sel_del = st.selectbox("請選擇要刪除的紀錄：", ["請選擇..."] + del_opts)
-        if st.button("🚨 確認刪除這筆收支"):
-            if sel_del != "請選擇...":
-                del_idx = int(sel_del.split(" | ")[0])
-                st.session_state.trans_df = st.session_state.trans_df.drop(del_idx).reset_index(drop=True)
-                st.success("✅ 已成功刪除該筆紀錄！")
-                st.rerun()
     
     if '類別' in current_trans.columns and '$' in current_trans.columns:
         total_income = current_trans[current_trans['類別'] == '收入']['$'].sum()
@@ -162,6 +147,22 @@ with tab1:
                 st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
 
     st.subheader("📝 收支總表")
+
+    # 刪除收支紀錄功能
+    with st.expander("🗑️ 刪除錯誤的收支紀錄"):
+        del_opts = []
+        for idx, row in st.session_state.trans_df.iterrows():
+            d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
+            del_opts.append(f"{idx} | {d_str} - {row.get('類別','')} : {row.get('項目','')} (${row.get('$','')})")
+        
+        sel_del = st.selectbox("請選擇要刪除的紀錄：", ["請選擇..."] + del_opts)
+        if st.button("🚨 確認刪除這筆收支"):
+            if sel_del != "請選擇...":
+                del_idx = int(sel_del.split(" | ")[0])
+                st.session_state.trans_df = st.session_state.trans_df.drop(del_idx).reset_index(drop=True)
+                st.success("✅ 已成功刪除該筆紀錄！")
+                st.rerun()
+    
     if "日期" in st.session_state.trans_df.columns:
         display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
     else:
