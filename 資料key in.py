@@ -14,7 +14,7 @@ st.title("🍈哈蜜瓜收支與季繳管理")
 # ==========================================
 @st.cache_data
 def load_excel():
-    df_trans = pd.read_excel("For Streamlit.xlsx", sheet_name='每周收支')
+    df_trans = pd.read_excel("For Streamlit.xlsx", sheet_name='收支明細')
     df_members = pd.read_excel("For Streamlit.xlsx", sheet_name='季繳追蹤')
     
     # 自動清除所有欄位名稱前後的隱藏空白字元
