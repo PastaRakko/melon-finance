@@ -7,7 +7,7 @@ import io
 from github import Github
 
 st.set_page_config(page_title="哈蜜瓜收支表", page_icon="🍈", layout="wide")
-st.title("🍈哈蜜瓜收支與季繳管理")
+st.title("🍈哈蜜瓜收支與季繳管理表")
 
 # ==========================================
 # 1. 讀取 Excel 檔案
@@ -237,13 +237,14 @@ with tab2:
         )   
         
         # 處理打勾刪除與雙擊修改邏輯
-        if edited_trans["🗑️ 刪除"].any():
-            st.session_state.trans_df = edited_trans[~edited_trans["🗑️ 刪除"]].drop(columns=["🗑️ 刪除"]).reset_index(drop=True)
-            st.success("✅已成功刪除勾選的紀錄！")
-            st.rerun()
+        if edited_trans["🗑️刪除"].any():
+            st.warning("⚠️發現已勾選的項目，確定要刪除嗎？（若誤按請將勾勾取消即可）")
+            if st.button("✅確認刪除勾選紀錄", key="confirm_del_trans", use_container_width=True):
+                st.session_state.trans_df = edited_trans[~edited_trans["🗑️刪除"]].drop(columns=["🗑️刪除"]).reset_index(drop=True)
+                st.rerun()
         else:
-            orig_check = display_df.drop(columns=["🗑️ 刪除"])
-            edit_check = edited_trans.drop(columns=["🗑️ 刪除"])
+            orig_check = display_df.drop(columns=["🗑️刪除"])
+            edit_check = edited_trans.drop(columns=["🗑️刪除"])
             if not edit_check.equals(orig_check):
                 st.session_state.trans_df = edit_check
                 st.rerun()
@@ -331,12 +332,13 @@ with tab3:
 
         # 處理打勾刪除與雙擊修改邏輯
         if edited_members["🗑️ 刪除"].any():
-            st.session_state.members_df = edited_members[~edited_members["🗑️ 刪除"]][['姓名', '繳費日期', '季繳開始日期', '剩餘次數']].reset_index(drop=True)
-            st.success("✅已成功刪除勾選的球友！")
-            st.rerun()
+            st.warning("⚠️發現已勾選的項目，確定要刪除嗎？（若誤按請將勾勾取消即可）")
+            if st.button("✅確認刪除勾選項目", key="confirm_del_mem", use_container_width=True):
+                st.session_state.members_df = edited_members[~edited_members["🗑️刪除"]][['姓名', '繳費日期', '季繳開始日期', '剩餘次數']].reset_index(drop=True)
+                st.rerun()
         else:
-            orig_check = display_df.drop(columns=["🗑️ 刪除"])
-            edit_check = edited_members.drop(columns=["🗑️ 刪除"])
+            orig_check = display_df.drop(columns=["🗑️刪除"])
+            edit_check = edited_members.drop(columns=["🗑️刪除"])
             if not edit_check.equals(orig_check):
                 st.session_state.members_df = edited_members[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
                 st.rerun()
