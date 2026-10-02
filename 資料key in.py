@@ -152,7 +152,18 @@ with tab1:
     else:
         display_df = st.session_state.trans_df
         st.warning(f"⚠️ 找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
-    st.dataframe(display_df, use_container_width=True)
+    # ✨ 使用 st.data_editor 讓表格可以直接雙擊修改
+    edited_trans = st.data_editor(
+        display_df, 
+        use_container_width=True, 
+        num_rows="dynamic", # 開啟此設定，您甚至可以直接在表格最下方新增一列，或選取整列按 Delete 刪除！
+        key="trans_editor"
+    )
+    
+    # 若您在表格上做了任何修改，將新資料存回系統並重新整理重算總結餘
+    if not edited_trans.equals(display_df):
+        st.session_state.trans_df = edited_trans
+        st.rerun()
 
     # ✨ 新增：刪除收支紀錄功能
     with st.expander("🗑️ 刪除錯誤的收支紀錄"):
@@ -191,7 +202,7 @@ with tab2:
 # 分頁 3：季繳剩餘次數追蹤
 # ------------------------------------------
 with tab3:
-    st.subheader("➕ 新增季繳名單")
+    st.subheader("➕ 新增季繳人員")
     
     with st.form("add_member_form"):
         col_m1, col_m2, col_m3 = st.columns(3)
@@ -210,7 +221,7 @@ with tab3:
             elif new_start_date.weekday() != 1:
                 weekdays_zh = ["一", "二", "三", "四", "五", "六", "日"]
                 wrong_day = weekdays_zh[new_start_date.weekday()]
-                st.error(f"⚠ 【日期錯誤】「季繳開始日期」必須是星期二！您選擇的 {new_start_date.strftime('%Y-%m-%d')} 是星期{wrong_day}。")
+                st.error(f"⚠ 【日期錯誤】「季繳開始日期」必須為星期二！您選擇的 {new_start_date.strftime('%Y-%m-%d')} 是星期{wrong_day}。")
             else:
                 # 針對新名單套用公式
                 today_dt = pd.to_datetime(datetime.today().date())
@@ -232,7 +243,7 @@ with tab3:
                 st.rerun() 
     st.divider()
 
-    st.subheader("📋 目前季繳狀態清單 (次數自動隨時間扣減)")
+    st.subheader("📋 季繳追蹤清單")
     
     def update_status(times):
         if times <= 0: return "🛑 已結束"
@@ -247,8 +258,19 @@ with tab3:
             return ['text-decoration: line-through; color: #888888;'] * len(row)
         return [''] * len(row)
 
-    styled_df = display_df.style.apply(highlight_zero, axis=1)
-    st.dataframe(styled_df, use_container_width=True, hide_index=True)
+# ✨ 使用 st.data_editor 讓名單可以直接修改
+    edited_members = st.data_editor(
+        display_df,
+        use_container_width=True,
+        num_rows="dynamic",
+        hide_index=True,
+        key="members_editor"
+    )
+
+    # 若有修改，把新資料覆蓋回去 (排除掉自動產生的'狀態提醒'欄位)
+    if not edited_members.equals(display_df):
+        st.session_state.members_df = edited_members[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
+        st.rerun()
 
 # ✨ 新增：刪除季繳球友功能
     with st.expander("🗑️️ 名單編輯"):
