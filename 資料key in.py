@@ -157,7 +157,7 @@ with tab1:
         display_df, 
         use_container_width=True, 
         num_rows="dynamic", # 開啟此設定，您甚至可以直接在表格最下方新增一列，或選取整列按 Delete 刪除！
-        key="trans_editor"
+        key="trans_editor",
         column_config={
             "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD")
         }
