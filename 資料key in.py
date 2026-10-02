@@ -171,7 +171,7 @@ with tab2:
         for col in display_df.select_dtypes(include=['object']).columns:
             display_df[col] = display_df[col].fillna("")
             
-display_df.insert(0, "🗑️ 刪除", False)
+        display_df.insert(0, "🗑️ 刪除", False)
             
         edited_trans = st.data_editor(
             display_df, 
