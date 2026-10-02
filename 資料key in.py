@@ -246,7 +246,7 @@ with tab2:
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1:
                 if st.button("❎確認刪除", key="confirm_del_trans", use_container_width=True):
-                    st.session_state.trans_df = edited_trans[~edited_trans["🗑️刪除"]].drop(columns=["🗑️️刪除"]).reset_index(drop=True)
+                    st.session_state.trans_df = edited_trans[~edited_trans["🗑️刪除"]].iloc[:, 1:].reset_index(drop=True)
                     st.session_state.trans_key_version += 1 
                     st.rerun()
 
@@ -347,7 +347,7 @@ with tab3:
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1:
                 if st.button("❎確認刪除", key="confirm_del_mem", use_container_width=True):
-                    st.session_state.members_df = edited_members[~edited_members["🗑️️刪除"]][['姓名', '繳費日期', '季繳開始日期', '剩餘次數']].reset_index(drop=True)
+                    st.session_state.members_df = edited_members[~edited_members["🗑️刪除"]][['姓名', '繳費日期', '季繳開始日期', '剩餘次數']].reset_index(drop=True)
                     st.session_state.members_key_version += 1
                     st.rerun()
             with col_btn2:
