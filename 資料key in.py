@@ -31,7 +31,20 @@ except Exception as e:
 # ==========================================
 if 'members_df' not in st.session_state:
     df_mem = df_members.dropna(subset=['姓名']).copy()
-    df_mem['剩餘次數'] = pd.to_numeric(df_mem['剩餘次數'], errors='coerce').fillna(0)
+    
+    # ✨ 確保日期格式正確
+    df_mem['季繳開始日期'] = pd.to_datetime(df_mem['季繳開始日期'], errors='coerce')
+    
+    # ✨ Excel 公式轉換：10 - ROUNDUP((TODAY() - 開始日期) / 7, 0)
+    today = pd.to_datetime(datetime.today().date())
+    days_diff = (today - df_mem['季繳開始日期']).dt.days
+    
+    df_mem['剩餘次數'] = np.where(
+        df_mem['季繳開始日期'].notna(),
+        10 - np.ceil(days_diff / 7),
+        0 # 如果沒填開始日期，預設顯示為 0
+    )
+    
     st.session_state.members_df = df_mem[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
     st.session_state.play_history = []
 
