@@ -103,7 +103,7 @@ with st.sidebar:
                 repo = g.get_repo(st.secrets["REPO_NAME"])
                 
                 # 3. 取得原本的檔案並進行覆蓋
-                file_path = "哈蜜瓜收支表.xlsx"
+                file_path = "For Streamlit.xlsx"
                 contents = repo.get_contents(file_path)
                 
                 commit_message = f"自動存檔: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
@@ -112,7 +112,6 @@ with st.sidebar:
                 st.success("✅存檔成功！")
             except Exception as e:
                 st.error(f"❌存檔失敗：請檢查 Secrets 設定或 Token 權限。錯誤細節：{e}")
-
 
 # ------------------------------------------
 # 分頁 2：記帳與管理
