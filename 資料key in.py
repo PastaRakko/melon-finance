@@ -42,7 +42,7 @@ if 'members_df' not in st.session_state:
         df_mem['季繳開始日期'].notna(),
         10 - np.ceil(days_diff / 7),
         0 # 如果沒填開始日期，預設顯示為 0
-    )
+    ).astype(int)
     
     st.session_state.members_df = df_mem[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
     st.session_state.play_history = []
@@ -158,6 +158,9 @@ with tab1:
         use_container_width=True, 
         num_rows="dynamic", # 開啟此設定，您甚至可以直接在表格最下方新增一列，或選取整列按 Delete 刪除！
         key="trans_editor"
+        column_config={
+            "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD")
+        }
     )
     
     # 若您在表格上做了任何修改，將新資料存回系統並重新整理重算總結餘
@@ -227,7 +230,7 @@ with tab3:
                 today_dt = pd.to_datetime(datetime.today().date())
                 start_dt = pd.to_datetime(new_start_date)
                 days_diff_new = (today_dt - start_dt).days
-                calculated_times = 10 - np.ceil(days_diff_new / 7)
+                calculated_times = int(10 - np.ceil(days_diff_new / 7))
                 
                 new_member_data = pd.DataFrame([{
                     "姓名": new_name,
@@ -265,6 +268,11 @@ with tab3:
         num_rows="dynamic",
         hide_index=True,
         key="members_editor"
+        column_config={
+            "繳費日期": st.column_config.DateColumn("繳費日期", format="YYYY-MM-DD"),
+            "季繳開始日期": st.column_config.DateColumn("季繳開始日期", format="YYYY-MM-DD"),
+            "剩餘次數": st.column_config.NumberColumn("剩餘次數", format="%d")
+        }
     )
 
     # 若有修改，把新資料覆蓋回去 (排除掉自動產生的'狀態提醒'欄位)
