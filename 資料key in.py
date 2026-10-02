@@ -105,9 +105,9 @@ with tab1:
         quarterly_reserve = total_remaining * cost_per_time
 
         col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("💵 總結餘金額", f"${net_balance:,.0f}")
         with col2:
+            st.metric("💵 總結餘金額", f"${net_balance:,.0f}")
+        with col1:
             st.success(f"### 🛡️ 可挪用金額: **${safe_buffer:,.0f}**")
         with col3:
             st.metric("💳 季繳預留金", f"${quarterly_reserve:,.0f}")
