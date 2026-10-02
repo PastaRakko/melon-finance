@@ -13,6 +13,11 @@ st.title("🍈 哈蜜瓜收支與季繳管理儀表板")
 def load_excel():
     df_trans = pd.read_excel("For Streamlit.xlsx", sheet_name='每周收支')
     df_members = pd.read_excel("For Streamlit.xlsx", sheet_name='季繳追蹤')
+    
+# 🌟 解決 KeyError 的關鍵：自動清除所有欄位名稱前後的隱藏空白字元
+    df_trans.columns = df_trans.columns.str.strip()
+    df_members.columns = df_members.columns.str.strip()
+   
     return df_trans, df_members
 
 try:
@@ -136,7 +141,12 @@ with tab1:
                 st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
 
     st.subheader("📝 每週收支流水帳")
-    st.dataframe(st.session_state.trans_df.sort_values(by="日期", ascending=False), use_container_width=True)
+    if "日期" in st.session_state.trans_df.columns:
+    display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
+else:
+    display_df = st.session_state.trans_df
+    st.warning(f"⚠️ 找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
+st.dataframe(display_df, use_container_width=True)
 
 # ------------------------------------------
 # 分頁 2：視覺化圖表
