@@ -204,12 +204,12 @@ with tab1:
         with col2:
             plot_df = current_trans.dropna(subset=['日期']).copy()
             plot_df['月份'] = plot_df['日期'].dt.strftime('%Y-%m')
-            
-            # 改為用「月份」與「類別」進行群組加總
+
             monthly_summary = plot_df.groupby(['月份', '類別'])['$'].sum().reset_index()
             
             fig_bar = px.bar(monthly_summary, x='月份', y='$', color='類別', barmode='group', title="每月收支變化",
                              color_discrete_map={'收入':'#28a745', '支出':'#dc3545'})
+            fig_bar.update_layout(xaxis_type='category')
             st.plotly_chart(fig_bar, use_container_width=True)
 
 # ------------------------------------------
