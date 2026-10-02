@@ -142,11 +142,11 @@ with tab1:
 
     st.subheader("📝 每週收支流水帳")
     if "日期" in st.session_state.trans_df.columns:
-    display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
-else:
-    display_df = st.session_state.trans_df
-    st.warning(f"⚠️ 找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
-st.dataframe(display_df, use_container_width=True)
+        display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False)
+    else:
+        display_df = st.session_state.trans_df
+        st.warning(f"⚠️ 找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
+    st.dataframe(display_df, use_container_width=True)
 
 # ------------------------------------------
 # 分頁 2：視覺化圖表
