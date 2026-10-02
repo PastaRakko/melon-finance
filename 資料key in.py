@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
+import numpy as np
 
 st.set_page_config(page_title="哈蜜瓜收支表儀表板", page_icon="🍈", layout="wide")
 st.title("🍈 哈蜜瓜收支與季繳管理儀表板")
