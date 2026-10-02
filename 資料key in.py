@@ -117,7 +117,7 @@ with st.sidebar:
 # 分頁 2：記帳與管理
 # ------------------------------------------
 with tab2:
-   col_left, col_right = st.columns([1, 2]) 
+    col_left, col_right = st.columns([1, 2]) 
     # 手動輸入流水帳表單
     with col_left:
     st.subheader("✍️新增收支紀錄")
