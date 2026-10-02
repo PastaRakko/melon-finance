@@ -42,6 +42,23 @@ if 'trans_df' not in st.session_state:
 # 取出目前的收支 DataFrame 方便後續計算
 current_trans = st.session_state.trans_df
 
+# ------------------------------------------
+# ✨ 動態產生下拉選單
+# ------------------------------------------
+# 項目選單
+item_options = ["場地費", "臨打", "季繳", "羽毛球", "活動費", "其他"]
+if '項目' in current_trans.columns:
+    for x in current_trans['項目'].dropna().unique():
+        if x not in item_options and str(x).strip() != "":
+            item_options.append(x)
+
+# 經手人選單
+handler_options = ["櫃台", "妙", "齊"]
+if '經手人' in current_trans.columns:
+    for x in current_trans['經手人'].dropna().unique():
+        if x not in handler_options and str(x).strip() != "":
+            handler_options.append(x)
+
 # ==========================================
 # 3. 建立網頁分頁
 # ==========================================
@@ -94,10 +111,10 @@ with tab1:
             t_date = st.date_input("📅 日期", datetime.today())
             t_type = st.selectbox("類別", ["收入", "支出"])
         with col_f2:
-            t_item = st.text_input("項目 (如: 臨打, 場地費, 羽毛球, 季繳, 活動費, 其他)", placeholder="必填")
+            t_item = st.text_input("項目", placeholder="必填")
             t_amount = st.number_input("金額 ($)", min_value=0, step=1)
         with col_f3:
-            t_handler = st.text_input("經手人", placeholder="如: 櫃台, 妙, 齊")
+            t_handler = st.text_input("經手人", placeholder="選填")
             t_note = st.text_input("備註")
             
         submitted = st.form_submit_button("➕ 確認新增這筆帳目", use_container_width=True)
