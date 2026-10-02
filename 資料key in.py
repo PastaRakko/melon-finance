@@ -248,7 +248,8 @@ with tab2:
                     st.rerun()
             with col_btn2:
                 if st.button("🔙取消刪除", key="cancel_del_trans", use_container_width=True):
-                    st.session_state["trans_editor"] = {"edited_rows": {}, "added_rows": [], "deleted_rows": []}
+                    if "trans_editor" in st.session_state:
+                        del st.session_state["trans_editor"]
                     st.rerun()
         else:
             orig_check = display_df.drop(columns=["🗑️刪除"])
