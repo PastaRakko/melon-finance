@@ -85,6 +85,21 @@ tab1, tab2, tab3 = st.tabs(["💰 財務與記帳", "📊 收支圖表", "🏸 �
 # ------------------------------------------
 with tab1:
     st.subheader("💰 總財務概況")
+
+        # 刪除收支紀錄功能
+    with st.expander("🗑️ 刪除錯誤的收支紀錄"):
+        del_opts = []
+        for idx, row in st.session_state.trans_df.iterrows():
+            d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
+            del_opts.append(f"{idx} | {d_str} - {row.get('類別','')} : {row.get('項目','')} (${row.get('$','')})")
+        
+        sel_del = st.selectbox("請選擇要刪除的紀錄：", ["請選擇..."] + del_opts)
+        if st.button("🚨 確認刪除這筆收支"):
+            if sel_del != "請選擇...":
+                del_idx = int(sel_del.split(" | ")[0])
+                st.session_state.trans_df = st.session_state.trans_df.drop(del_idx).reset_index(drop=True)
+                st.success("✅ 已成功刪除該筆紀錄！")
+                st.rerun()
     
     if '類別' in current_trans.columns and '$' in current_trans.columns:
         total_income = current_trans[current_trans['類別'] == '收入']['$'].sum()
@@ -156,7 +171,7 @@ with tab1:
     edited_trans = st.data_editor(
         display_df, 
         use_container_width=True, 
-        num_rows="dynamic",
+        num_rows="fixed",
         hide_index=True,
         key="trans_editor",
         column_config={
@@ -168,21 +183,6 @@ with tab1:
     if not edited_trans.equals(display_df):
         st.session_state.trans_df = edited_trans
         st.rerun()
-
-    # ✨ 新增：刪除收支紀錄功能
-    with st.expander("🗑️ 刪除錯誤的收支紀錄"):
-        del_opts = []
-        for idx, row in st.session_state.trans_df.iterrows():
-            d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
-            del_opts.append(f"{idx} | {d_str} - {row.get('類別','')} : {row.get('項目','')} (${row.get('$','')})")
-        
-        sel_del = st.selectbox("請選擇要刪除的紀錄：", ["請選擇..."] + del_opts)
-        if st.button("🚨 確認刪除這筆收支"):
-            if sel_del != "請選擇...":
-                del_idx = int(sel_del.split(" | ")[0])
-                st.session_state.trans_df = st.session_state.trans_df.drop(del_idx).reset_index(drop=True)
-                st.success("✅ 已成功刪除該筆紀錄！")
-                st.rerun()
 
 # ------------------------------------------
 # 分頁 2：視覺化圖表
@@ -249,6 +249,21 @@ with tab3:
 
     st.subheader("📋 季繳追蹤清單")
     
+    # 刪除季繳球友功能
+    with st.expander("🗑️️ 名單編輯"):
+        del_mem_opts = []
+        for idx, row in st.session_state.members_df.iterrows():
+            d_str = row['季繳開始日期'].strftime('%Y-%m-%d') if pd.notnull(row['季繳開始日期']) else '無日期'
+            del_mem_opts.append(f"{idx} | {row.get('姓名','')} (開始日: {d_str})")
+            
+        sel_mem_del = st.selectbox("請選擇欲刪除項目：", ["請選擇..."] + del_mem_opts)
+        if st.button("🚨 確認刪除"):
+            if sel_mem_del != "請選擇...":
+                mem_del_idx = int(sel_mem_del.split(" | ")[0])
+                st.session_state.members_df = st.session_state.members_df.drop(mem_del_idx).reset_index(drop=True)
+                st.success("✅ 已成功刪除！")
+                st.rerun()
+    
     def update_status(times):
         if times <= 0: return "🛑 已結束"
         elif times <= 3: return "⚠️ 提醒繳費"
@@ -281,18 +296,4 @@ with tab3:
         st.session_state.members_df = edited_members[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
         st.rerun()
 
-# ✨ 新增：刪除季繳球友功能
-    with st.expander("🗑️️ 名單編輯"):
-        del_mem_opts = []
-        for idx, row in st.session_state.members_df.iterrows():
-            d_str = row['季繳開始日期'].strftime('%Y-%m-%d') if pd.notnull(row['季繳開始日期']) else '無日期'
-            del_mem_opts.append(f"{idx} | {row.get('姓名','')} (開始日: {d_str})")
-            
-        sel_mem_del = st.selectbox("請選擇欲刪除項目：", ["請選擇..."] + del_mem_opts)
-        if st.button("🚨 確認刪除"):
-            if sel_mem_del != "請選擇...":
-                mem_del_idx = int(sel_mem_del.split(" | ")[0])
-                st.session_state.members_df = st.session_state.members_df.drop(mem_del_idx).reset_index(drop=True)
-                st.success("✅ 已成功刪除！")
-                st.rerun()
 
