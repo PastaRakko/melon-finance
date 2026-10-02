@@ -248,28 +248,25 @@ with tab1:
 # 分頁 3：季繳剩餘次數追蹤
 # ------------------------------------------
 with tab3:
-    st.subheader("➕新增季繳人員")
-    
-    with st.form("add_member_form"):
-        col_m1, col_m2, col_m3 = st.columns(3)
-        with col_m1:
+    col_left, col_right = st.columns([1, 2])
+
+    with col_left:
+        st.subheader("➕新增季繳人員")
+        with st.form("add_member_form"):
             new_name = st.text_input("👤姓名", placeholder="必填")
-        with col_m2:
             new_date = st.date_input("📅繳費日期", datetime.today())
-        with col_m3:
             new_start_date = st.date_input("📅季繳開始日期", datetime.today(), help="⚠️僅能選擇禮拜二")
             
-        submit_new_member = st.form_submit_button("➕確認新增人員", use_container_width=True)
+            submit_new_member = st.form_submit_button("➕確認新增人員", use_container_width=True)
         
-        if submit_new_member:
-            if not new_name.strip():
-                st.warning("⚠️請填寫「姓名」欄位！")
+            if submit_new_member:
+                if not new_name.strip():
+                    st.warning("⚠️請填寫「姓名」欄位！")
             elif new_start_date.weekday() != 1:
                 weekdays_zh = ["一", "二", "三", "四", "五", "六", "日"]
                 wrong_day = weekdays_zh[new_start_date.weekday()]
                 st.error(f"⚠️【日期錯誤】「季繳開始日期」必須為星期二！您選擇的 {new_start_date.strftime('%Y-%m-%d')} 是星期{wrong_day}。")
             else:
-                # 針對新名單套用公式
                 today_dt = pd.to_datetime(datetime.today().date())
                 start_dt = pd.to_datetime(new_start_date)
                 days_diff_new = (today_dt - start_dt).days
@@ -289,57 +286,55 @@ with tab3:
                 st.rerun() 
     st.divider()
 
-    st.subheader("📋季繳追蹤清單")
+    with col_right:
+        st.subheader("📋季繳追蹤清單")
     
-    # 刪除季繳球友功能
-    with st.expander("🗑️️名單編輯"):
-        del_mem_opts = []
-        for idx, row in st.session_state.members_df.iterrows():
-            d_str = row['季繳開始日期'].strftime('%Y-%m-%d') if pd.notnull(row['季繳開始日期']) else '無日期'
-            del_mem_opts.append(f"{idx} | {row.get('姓名','')} (開始日: {d_str})")
-            
-        sel_mem_del = st.selectbox("請選擇欲刪除項目：", ["請選擇..."] + del_mem_opts)
-        if st.button("❌確認刪除"):
-            if sel_mem_del != "請選擇...":
-                mem_del_idx = int(sel_mem_del.split(" | ")[0])
-                st.session_state.members_df = st.session_state.members_df.drop(mem_del_idx).reset_index(drop=True)
-                st.success("✅已成功刪除！")
-                st.rerun()
+        with st.expander("🗑️️名單編輯"):
+            del_mem_opts = []
+            for idx, row in st.session_state.members_df.iterrows():
+                d_str = row['季繳開始日期'].strftime('%Y-%m-%d') if pd.notnull(row['季繳開始日期']) else '無日期'
+                del_mem_opts.append(f"{idx} | {row.get('姓名','')} (開始日: {d_str})")
+                
+            sel_mem_del = st.selectbox("請選擇欲刪除項目：", ["請選擇..."] + del_mem_opts)
+            if st.button("❌確認刪除"):
+                if sel_mem_del != "請選擇...":
+                    mem_del_idx = int(sel_mem_del.split(" | ")[0])
+                    st.session_state.members_df = st.session_state.members_df.drop(mem_del_idx).reset_index(drop=True)
+                    st.success("✅已成功刪除！")
+                    st.rerun()
+        
+        def update_status(times):
+            if times <= 0: return "⛔已結束"
+            elif times <= 2: return "⚠️剩餘2次，可提醒繳費"
+            else: return "🟢進行中"
     
-    def update_status(times):
-        if times <= 0: return "⛔已結束"
-        elif times <= 2: return "⚠️剩餘2次，可提醒繳費"
-        else: return "🟢進行中"
-
-    display_df = st.session_state.members_df.copy()
-    display_df['狀態提醒'] = display_df['剩餘次數'].apply(update_status)
-
-    for col in display_df.select_dtypes(include=['object']).columns:
-        display_df[col] = display_df[col].fillna("")
-
-    def highlight_zero(row):
-        if row['剩餘次數'] <= 0:
-            return ['text-decoration: line-through; color: #888888;'] * len(row)
-        return [''] * len(row)
-
-    edited_members = st.data_editor(
-        display_df,
-        use_container_width=True,
-        num_rows="fixed",
-        hide_index=True,
-        key="members_editor",
-        column_config={
-            "繳費日期": st.column_config.DateColumn("繳費日期", format="YYYY-MM-DD"),
-            "季繳開始日期": st.column_config.DateColumn("季繳開始日期", format="YYYY-MM-DD"),
-            "剩餘次數": st.column_config.NumberColumn("剩餘次數", format="%d")
-        }
-    )
-
-    # 若有修改，把新資料覆蓋回去 (排除掉自動產生的'狀態提醒'欄位)
-    if not edited_members.equals(display_df):
-        st.session_state.members_df = edited_members[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
-        st.rerun()
-
+        display_df = st.session_state.members_df.copy()
+        display_df['狀態提醒'] = display_df['剩餘次數'].apply(update_status)
+    
+        for col in display_df.select_dtypes(include=['object']).columns:
+            display_df[col] = display_df[col].fillna("")
+    
+        def highlight_zero(row):
+            if row['剩餘次數'] <= 0:
+                return ['text-decoration: line-through; color: #888888;'] * len(row)
+            return [''] * len(row)
+    
+        edited_members = st.data_editor(
+            display_df,
+            use_container_width=True,
+            num_rows="fixed",
+            hide_index=True,
+            key="members_editor",
+            column_config={
+                "繳費日期": st.column_config.DateColumn("繳費日期", format="YYYY-MM-DD"),
+                "季繳開始日期": st.column_config.DateColumn("季繳開始日期", format="YYYY-MM-DD"),
+                "剩餘次數": st.column_config.NumberColumn("剩餘次數", format="%d")
+            }
+        )
+    
+        if not edited_members.equals(display_df):
+            st.session_state.members_df = edited_members[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
+            st.rerun()
 
 # ------------------------------------------
 # 分頁 4：俱樂部資訊 (收費標準)
