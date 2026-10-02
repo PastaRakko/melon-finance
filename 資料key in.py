@@ -180,7 +180,7 @@ with tab2:
     with col_left:
         st.subheader("✍️新增收支紀錄")
         with st.form("add_transaction_form", clear_on_submit=True):
-            t_date = st.date_input("📅 日期", datetime.today())
+            t_date = st.date_input("📅日期", datetime.today())
             t_type = st.selectbox("類別", ["收入", "支出"])
             t_item = st.selectbox("項目", item_options)
             t_amount = st.number_input("金額 ($)", min_value=0, step=1)
@@ -219,7 +219,7 @@ with tab2:
             display_df[col] = display_df[col].fillna("")
             
         # 插入刪除打勾欄位
-        display_df.insert(0, "🗑️ 刪除", False)
+        display_df.insert(0, "🗑️刪除", False)
             
         edited_trans = st.data_editor(
             display_df, 
@@ -228,7 +228,7 @@ with tab2:
             hide_index=True,
             key="trans_editor",
             column_config={
-                "🗑️ 刪除": st.column_config.CheckboxColumn("刪除", default=False, width="small"),
+                "🗑️刪除": st.column_config.CheckboxColumn("刪除", default=False, width="small"),
                 "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD"),
                 "類別": st.column_config.SelectboxColumn("類別", options=["收入", "支出"], required=True),
                 "項目": st.column_config.SelectboxColumn("項目", options=item_options),
@@ -309,7 +309,7 @@ with tab3:
             display_df[col] = display_df[col].fillna("")
             
         # 插入刪除打勾欄位
-        display_df.insert(0, "🗑️ 刪除", False)
+        display_df.insert(0, "🗑️刪除", False)
 
         def highlight_zero(row):
             if row['剩餘次數'] <= 0:
@@ -323,7 +323,7 @@ with tab3:
             hide_index=True,
             key="members_editor",
             column_config={
-                "🗑️ 刪除": st.column_config.CheckboxColumn("刪除", default=False, width="small"),
+                "🗑️刪除": st.column_config.CheckboxColumn("刪除", default=False, width="small"),
                 "繳費日期": st.column_config.DateColumn("繳費日期", format="YYYY-MM-DD"),
                 "季繳開始日期": st.column_config.DateColumn("季繳開始日期", format="YYYY-MM-DD"),
                 "剩餘次數": st.column_config.NumberColumn("剩餘次數", format="%d")
@@ -331,7 +331,7 @@ with tab3:
         )
 
         # 處理打勾刪除與雙擊修改邏輯
-        if edited_members["🗑️ 刪除"].any():
+        if edited_members["🗑️刪除"].any():
             st.warning("⚠️發現已勾選的項目，確定要刪除嗎？（若誤按請將勾勾取消即可）")
             if st.button("✅確認刪除勾選項目", key="confirm_del_mem", use_container_width=True):
                 st.session_state.members_df = edited_members[~edited_members["🗑️刪除"]][['姓名', '繳費日期', '季繳開始日期', '剩餘次數']].reset_index(drop=True)
