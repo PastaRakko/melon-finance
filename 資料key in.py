@@ -78,41 +78,12 @@ if '經手人' in current_trans.columns:
 # ==========================================
 # 3. 建立網頁分頁
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["💰 財務與記帳", "📊 收支圖表", "🏸 季繳追蹤"])
+tab1, tab2, tab3 = st.tabs(["💰 記帳與收支狀況", "📊 收支概況", "🏸 季繳追蹤"])
 
 # ------------------------------------------
 # 分頁 1：財務與記帳 (加入新增帳目表單)
 # ------------------------------------------
 with tab1:
-    st.subheader("💰 總財務概況")
-    
-    if '類別' in current_trans.columns and '$' in current_trans.columns:
-        total_income = current_trans[current_trans['類別'] == '收入']['$'].sum()
-        total_expense = current_trans[current_trans['類別'] == '支出']['$'].sum()
-        net_balance = total_income - total_expense
-
-        # 安全挪用款
-        if '項目' in current_trans.columns:
-            venue_expenses = current_trans[(current_trans['類別'] == '支出') & (current_trans['項目'] == '場地費')]['$']
-            weekly_venue_fee = venue_expenses.mode()[0] if not venue_expenses.empty else 760
-        else:
-            weekly_venue_fee = 760
-        safe_buffer = weekly_venue_fee * 2 
-
-        # 季繳預留金
-        total_remaining = st.session_state.members_df['剩餘次數'].sum()
-        cost_per_time = 220
-        quarterly_reserve = total_remaining * cost_per_time
-
-        col1, col2, col3 = st.columns(3)
-        with col2:
-            st.metric("💵 總結餘金額", f"${net_balance:,.0f}")
-        with col1:
-            st.success(f"### 🛡️ 可挪用金額: **${safe_buffer:,.0f}**")
-        with col3:
-            st.metric("💳 季繳預留金", f"${quarterly_reserve:,.0f}")
-            
-    st.divider()
     
     # 手動輸入流水帳表單
     st.subheader("✍️ 新增收支紀錄")
@@ -189,7 +160,38 @@ with tab1:
 # 分頁 2：視覺化圖表
 # ------------------------------------------
 with tab2:
+    st.subheader("💰 總財務概況")
+    
+    if '類別' in current_trans.columns and '$' in current_trans.columns:
+        total_income = current_trans[current_trans['類別'] == '收入']['$'].sum()
+        total_expense = current_trans[current_trans['類別'] == '支出']['$'].sum()
+        net_balance = total_income - total_expense
+
+        # 安全挪用款
+        if '項目' in current_trans.columns:
+            venue_expenses = current_trans[(current_trans['類別'] == '支出') & (current_trans['項目'] == '場地費')]['$']
+            weekly_venue_fee = venue_expenses.mode()[0] if not venue_expenses.empty else 760
+        else:
+            weekly_venue_fee = 760
+        safe_buffer = weekly_venue_fee * 2 
+
+        # 季繳預留金
+        total_remaining = st.session_state.members_df['剩餘次數'].sum()
+        cost_per_time = 220
+        quarterly_reserve = total_remaining * cost_per_time
+
+        col1, col2, col3 = st.columns(3)
+        with col2:
+            st.metric("💵 總結餘金額", f"${net_balance:,.0f}")
+        with col1:
+            st.success(f"### 🛡️ 可挪用金額: **${safe_buffer:,.0f}**")
+        with col3:
+            st.metric("💳 季繳預留金", f"${quarterly_reserve:,.0f}")
+            
+    st.divider()
+    
     st.subheader("📊 收支圖表分析")
+    
     if '類別' in current_trans.columns and '$' in current_trans.columns and '日期' in current_trans.columns:
         col1, col2 = st.columns(2)
         with col1:
