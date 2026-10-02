@@ -32,7 +32,7 @@ except Exception as e:
 if 'members_df' not in st.session_state:
     df_mem = df_members.dropna(subset=['姓名']).copy()
     df_mem['剩餘次數'] = pd.to_numeric(df_mem['剩餘次數'], errors='coerce').fillna(0)
-    st.session_state.members_df = df_mem[['姓名', '繳費日期', '剩餘次數']]
+    st.session_state.members_df = df_mem[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
     st.session_state.play_history = []
 
 if 'trans_df' not in st.session_state:
@@ -90,7 +90,7 @@ with tab1:
 
         # 季繳預留金
         total_remaining = st.session_state.members_df['剩餘次數'].sum()
-        st.markdown(f"*(目前季繳球友合計剩餘： **{total_remaining}** 次，資料與「季繳追蹤」分頁連動)*")
+        st.markdown(f"*(此處資料與「季繳追蹤」分頁連動)*")
         cost_per_time = st.number_input("💲 季繳單次成本設定 (元/次)：", min_value=0, value=220, step=10)
         
         quarterly_reserve = total_remaining * cost_per_time
@@ -190,8 +190,44 @@ with tab3:
             st.rerun()
 
     st.divider()
-    st.subheader("📋 目前季繳狀態清單")
+    st.subheader("➕ 季繳名單新增")
+    with st.form("add_member_form", clear_on_submit=True):
+        col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+        with col_m1:
+            new_name = st.text_input("👤 姓名", placeholder="必填")
+        with col_m2:
+            new_date = st.date_input("📅 繳費日期", datetime.today())
+        with col_m3:
+            new_date = st.date_input("📅 季繳開始日期", datetime.today())          
+        with col_m4:
+            new_times = st.number_input("🔢 季繳次數", min_value=1, value=10, step=1)
+            
+        submit_new_member = st.form_submit_button("確認新增", use_container_width=True)
+        
+        if submit_new_member:
+            if not new_name.strip():
+                st.warning("⚠️ 請填寫「姓名」欄位！")
+            elif new_start_date.weekday() != 1:
+                # weekday() 回傳 1 代表星期二。若不是 1 就擋下來並提示
+                weekdays_zh = ["一", "二", "三", "四", "五", "六", "日"]
+                wrong_day = weekdays_zh[new_start_date.weekday()]
+                st.error(f"⚠️️ 【日期錯誤】「季繳開始日期」必須是星期二！您選擇的 {new_start_date.strftime('%Y-%m-%d')} 是星期{wrong_day}。")
+            else:
+                new_member_data = pd.DataFrame([{
+                    "姓名": new_name,
+                    "繳費日期": pd.to_datetime(new_date),
+                    "季繳開始日期": pd.to_datetime(new_start_date),
+                    "剩餘次數": new_times
+                }])
+                st.session_state.members_df = pd.concat(
+                    [st.session_state.members_df, new_member_data], 
+                    ignore_index=True
+                )
+                st.success(f"✅ 已成功新增球友：{new_name} (開始日: {new_start_date}, 設定為 {new_times} 次)")
+                st.rerun()
+    st.divider()
     
+    st.subheader("📋 目前季繳狀態清單")
     def update_status(times):
         if times <= 0: return "🛑 已結束"
         elif times <= 3: return "⚠️ 提醒繳費"
@@ -209,5 +245,5 @@ with tab3:
     st.dataframe(styled_df, use_container_width=True, hide_index=True)
 
     if st.session_state.play_history:
-        st.subheader("🕒 本次新增打球紀錄 (離開網頁即清除)")
+        st.subheader("🕒 本次新增打球紀錄")
         st.table(pd.DataFrame(st.session_state.play_history))
