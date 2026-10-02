@@ -105,12 +105,12 @@ with tab1:
         quarterly_reserve = total_remaining * cost_per_time
 
         col1, col2, col3 = st.columns(3)
-        with col2:
-            st.metric("💵 總結餘現金", f"${net_balance:,.0f}")
         with col1:
-            st.success(f"### 🛡️ 安全挪用款: **${safe_buffer:,.0f}**\n*(單週場地費 ${weekly_venue_fee:.0f} × 2週)*")
+            st.metric("💵 總結餘金額", f"${net_balance:,.0f}")
+        with col2:
+            st.success(f"### 🛡️ 可挪用金額: **${safe_buffer:,.0f}**")
         with col3:
-            st.metric("💳 季繳預留金", f"${quarterly_reserve:,.0f}", f"共剩 {total_remaining} 次未打")
+            st.metric("💳 季繳預留金", f"${quarterly_reserve:,.0f}")
             
     st.divider()
     
@@ -251,17 +251,17 @@ with tab3:
     st.dataframe(styled_df, use_container_width=True, hide_index=True)
 
 # ✨ 新增：刪除季繳球友功能
-    with st.expander("🗑️️ 刪除季繳球友名單"):
+    with st.expander("🗑️️ 名單編輯"):
         del_mem_opts = []
         for idx, row in st.session_state.members_df.iterrows():
             d_str = row['季繳開始日期'].strftime('%Y-%m-%d') if pd.notnull(row['季繳開始日期']) else '無日期'
             del_mem_opts.append(f"{idx} | {row.get('姓名','')} (開始日: {d_str})")
             
-        sel_mem_del = st.selectbox("請選擇要刪除的球友：", ["請選擇..."] + del_mem_opts)
-        if st.button("🚨 確認刪除這位球友"):
+        sel_mem_del = st.selectbox("請選擇欲刪除項目：", ["請選擇..."] + del_mem_opts)
+        if st.button("🚨 確認刪除"):
             if sel_mem_del != "請選擇...":
                 mem_del_idx = int(sel_mem_del.split(" | ")[0])
                 st.session_state.members_df = st.session_state.members_df.drop(mem_del_idx).reset_index(drop=True)
-                st.success("✅ 已成功刪除該名球友！")
+                st.success("✅ 已成功刪除！")
                 st.rerun()
 
