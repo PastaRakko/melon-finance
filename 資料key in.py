@@ -79,7 +79,7 @@ if '經手人' in current_trans.columns:
 # 左側邊欄：一鍵雲端存檔
 # ==========================================
 with st.sidebar:
-    st.header("☁️雲端同步存檔")
+    st.header("💾雲端同步存檔")
     st.info("💡完成資料修改後，請務必點擊下方按鈕以更新")
     
     if st.button("👆確認更新並存檔", use_container_width=True):
@@ -103,7 +103,7 @@ with st.sidebar:
                 commit_message = f"自動存檔: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
                 repo.update_file(contents.path, commit_message, excel_data, contents.sha)
                 
-                st.success("✅存檔成功！資料已永久同步。")
+                st.success("✅存檔成功！資料已完成同步")
             except Exception as e:
                 st.error(f"❌存檔失敗：請檢查 Secrets 設定或 Token 權限。錯誤細節：{e}")
 
