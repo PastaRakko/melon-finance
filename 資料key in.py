@@ -120,25 +120,20 @@ with tab2:
     col_left, col_right = st.columns([1, 2]) 
     # 手動輸入流水帳表單
     with col_left:
-    st.subheader("✍️新增收支紀錄")
+        st.subheader("✍️新增收支紀錄")
         with st.form("add_transaction_form", clear_on_submit=True):
-            col_f1, col_f2, col_f3 = st.columns(3)
-            with col_f1:
-                t_date = st.date_input("📅 日期", datetime.today())
-                t_type = st.selectbox("類別", ["收入", "支出"])
-            with col_f2:
-                t_item = st.selectbox("項目", item_options)
-                t_amount = st.number_input("金額 ($)", min_value=0, step=1)
-            with col_f3:
-                t_handler = st.selectbox("經手人", handler_options)
-                t_note = st.text_input("備註")
+            t_date = st.date_input("📅 日期", datetime.today())
+            t_type = st.selectbox("類別", ["收入", "支出"])
+            t_item = st.selectbox("項目", item_options)
+            t_amount = st.number_input("金額 ($)", min_value=0, step=1)
+            t_handler = st.selectbox("經手人", handler_options)
+            t_note = st.text_input("備註")
                 
             submitted = st.form_submit_button("➕確認新增帳目", use_container_width=True)
             if submitted:
                 if not t_item:
                     st.warning("⚠️請填寫「項目」欄位！")
                 else:
-                    # 建立新資料列並附加到現有的 session_state
                     new_record = pd.DataFrame([{
                         "日期": pd.to_datetime(t_date),
                         "類別": t_type,
@@ -151,9 +146,9 @@ with tab2:
                     st.success(f"✅已成功記帳：{t_type} - {t_item} ${t_amount}")
                     st.rerun() # 自動重新整理畫面，讓上方財務概況瞬間更新
     with col_right:
-    st.subheader("📝收支總表")
+        st.subheader("📝收支總表")
 
-          with st.expander("🗑️刪除錯誤的收支紀錄"):
+        with st.expander("🗑️刪除錯誤的收支紀錄"):
             del_opts = []
             for idx, row in st.session_state.trans_df.iterrows():
                 d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
