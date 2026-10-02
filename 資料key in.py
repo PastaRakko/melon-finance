@@ -287,11 +287,10 @@ with tab3:
             return ['text-decoration: line-through; color: #888888;'] * len(row)
         return [''] * len(row)
 
-# ✨ 使用 st.data_editor 讓名單可以直接修改
     edited_members = st.data_editor(
         display_df,
         use_container_width=True,
-        num_rows="dynamic",
+        num_rows="fixed",
         hide_index=True,
         key="members_editor",
         column_config={
