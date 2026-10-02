@@ -237,14 +237,25 @@ with tab2:
         )   
         
         # 處理打勾刪除與雙擊修改邏輯
-        if edited_trans["🗑️刪除"].any():
-            st.warning("⚠️發現已勾選的項目，確定要刪除嗎？（若誤按請將勾勾取消即可）")
-            if st.button("✅確認刪除勾選紀錄", key="confirm_del_trans", use_container_width=True):
-                st.session_state.trans_df = edited_trans[~edited_trans["🗑️刪除"]].drop(columns=["🗑️刪除"]).reset_index(drop=True)
-                st.rerun()
+        if edited_trans["🗑️ 刪除"].any():
+            st.warning("⚠️ 發現已勾選的項目，確定要刪除嗎？")
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                if st.button("🚨 確認刪除", key="confirm_del_trans", use_container_width=True):
+                    # 執行刪除並清除表格的暫存狀態，讓勾勾恢復空白
+                    st.session_state.trans_df = edited_trans[~edited_trans["🗑️ 刪除"]].drop(columns=["🗑️ 刪除"]).reset_index(drop=True)
+                    if "trans_editor" in st.session_state:
+                        del st.session_state["trans_editor"]
+                    st.rerun()
+            with col_btn2:
+                if st.button("🔙 取消刪除", key="cancel_del_trans", use_container_width=True):
+                    # 清除表格的暫存狀態，直接重置勾選框
+                    if "trans_editor" in st.session_state:
+                        del st.session_state["trans_editor"]
+                    st.rerun()
         else:
-            orig_check = display_df.drop(columns=["🗑️刪除"])
-            edit_check = edited_trans.drop(columns=["🗑️刪除"])
+            orig_check = display_df.drop(columns=["🗑️ 刪除"])
+            edit_check = edited_trans.drop(columns=["🗑️ 刪除"])
             if not edit_check.equals(orig_check):
                 st.session_state.trans_df = edit_check
                 st.rerun()
@@ -331,14 +342,25 @@ with tab3:
         )
 
         # 處理打勾刪除與雙擊修改邏輯
-        if edited_members["🗑️刪除"].any():
-            st.warning("⚠️發現已勾選的項目，確定要刪除嗎？（若誤按請將勾勾取消即可）")
-            if st.button("✅確認刪除勾選項目", key="confirm_del_mem", use_container_width=True):
-                st.session_state.members_df = edited_members[~edited_members["🗑️刪除"]][['姓名', '繳費日期', '季繳開始日期', '剩餘次數']].reset_index(drop=True)
-                st.rerun()
+        if edited_members["🗑️ 刪除"].any():
+            st.warning("⚠️ 發現已勾選的項目，確定要刪除嗎？")
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                if st.button("🚨 確認刪除", key="confirm_del_mem", use_container_width=True):
+                    # 執行刪除並清除表格的暫存狀態，讓勾勾恢復空白
+                    st.session_state.members_df = edited_members[~edited_members["🗑️ 刪除"]][['姓名', '繳費日期', '季繳開始日期', '剩餘次數']].reset_index(drop=True)
+                    if "members_editor" in st.session_state:
+                        del st.session_state["members_editor"]
+                    st.rerun()
+            with col_btn2:
+                if st.button("🔙 取消刪除", key="cancel_del_mem", use_container_width=True):
+                    # 清除表格的暫存狀態，直接重置勾選框
+                    if "members_editor" in st.session_state:
+                        del st.session_state["members_editor"]
+                    st.rerun()
         else:
-            orig_check = display_df.drop(columns=["🗑️刪除"])
-            edit_check = edited_members.drop(columns=["🗑️刪除"])
+            orig_check = display_df.drop(columns=["🗑️ 刪除"])
+            edit_check = edited_members.drop(columns=["🗑️ 刪除"])
             if not edit_check.equals(orig_check):
                 st.session_state.members_df = edited_members[['姓名', '繳費日期', '季繳開始日期', '剩餘次數']]
                 st.rerun()
