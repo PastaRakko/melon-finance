@@ -242,15 +242,14 @@ with tab2:
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1:
                 if st.button("❎確認刪除", key="confirm_del_trans", use_container_width=True):
-                    # 執行刪除並清除表格的暫存狀態，讓勾勾恢復空白
-                    st.session_state.trans_df = edited_trans[~edited_trans["🗑️刪除"]].drop(columns=["🗑️刪除"]).reset_index(drop=True)
+                    st.session_state.trans_df = edited_trans[~edited_trans["🗑️刪除"]].drop(columns=["🗑️️刪除"]).reset_index(drop=True)
                     if "trans_editor" in st.session_state:
                         del st.session_state["trans_editor"]
                     st.rerun()
             with col_btn2:
                 if st.button("🔙取消刪除", key="cancel_del_trans", use_container_width=True):
-                   st.session_state["trans_editor"] = {"edited_rows": {}, "added_rows": [], "deleted_rows": []}
-                   st.rerun()
+                    st.session_state["trans_editor"] = {"edited_rows": {}, "added_rows": [], "deleted_rows": []}
+                    st.rerun()
         else:
             orig_check = display_df.drop(columns=["🗑️刪除"])
             edit_check = edited_trans.drop(columns=["🗑️刪除"])
@@ -344,14 +343,12 @@ with tab3:
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1:
                 if st.button("❎確認刪除", key="confirm_del_mem", use_container_width=True):
-                    # 執行刪除並清除表格的暫存狀態，讓勾勾恢復空白
-                    st.session_state.members_df = edited_members[~edited_members["🗑️刪除"]][['姓名', '繳費日期', '季繳開始日期', '剩餘次數']].reset_index(drop=True)
+                    st.session_state.members_df = edited_members[~edited_members["🗑️️刪除"]][['姓名', '繳費日期', '季繳開始日期', '剩餘次數']].reset_index(drop=True)
                     if "members_editor" in st.session_state:
                         del st.session_state["members_editor"]
                     st.rerun()
             with col_btn2:
                 if st.button("🔙取消刪除", key="cancel_del_mem", use_container_width=True):
-                    # 清除表格的暫存狀態，直接重置勾選框
                     st.session_state["members_editor"] = {"edited_rows": {}, "added_rows": [], "deleted_rows": []}
                     st.rerun()
         else:
