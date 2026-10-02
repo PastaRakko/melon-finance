@@ -111,11 +111,6 @@ with tab1:
             st.success(f"### 🛡️ 安全挪用款: **${safe_buffer:,.0f}**\n*(單週場地費 ${weekly_venue_fee:.0f} × 2週)*")
         with col3:
             st.metric("💳 季繳預留金", f"${quarterly_reserve:,.0f}", f"共剩 {total_remaining} 次未打")
-        
-        if available_cash >= 0:
-            st.success(f"### 🎉 實際可動用盈餘： **${available_cash:,.0f}**")
-        else:
-            st.error(f"### ⚠️️ 實際可動用盈餘： **${available_cash:,.0f}**")
             
     st.divider()
     
