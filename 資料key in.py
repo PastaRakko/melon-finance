@@ -258,33 +258,23 @@ with tab3:
             new_start_date = st.date_input("📅季繳開始日期", datetime.today(), help="⚠️僅能選擇禮拜二")
             
             submit_new_member = st.form_submit_button("➕確認新增人員", use_container_width=True)
-        
-            if submit_new_member:
-                if not new_name.strip():
-                    st.warning("⚠️請填寫「姓名」欄位！")
-            elif new_start_date.weekday() != 1:
-                weekdays_zh = ["一", "二", "三", "四", "五", "六", "日"]
-                wrong_day = weekdays_zh[new_start_date.weekday()]
-                st.error(f"⚠️【日期錯誤】「季繳開始日期」必須為星期二！您選擇的 {new_start_date.strftime('%Y-%m-%d')} 是星期{wrong_day}。")
-            else:
-                today_dt = pd.to_datetime(datetime.today().date())
-                start_dt = pd.to_datetime(new_start_date)
-                days_diff_new = (today_dt - start_dt).days
-                calculated_times = int(10 - np.ceil(days_diff_new / 7))
-                
-                new_member_data = pd.DataFrame([{
-                    "姓名": new_name,
-                    "繳費日期": pd.to_datetime(new_date),
-                    "季繳開始日期": start_dt,
-                    "剩餘次數": calculated_times
-                }])
-                st.session_state.members_df = pd.concat(
-                    [st.session_state.members_df, new_member_data], 
-                    ignore_index=True
-                )
-                st.success(f"✅已成功新增球友：{new_name} (開始日: {new_start_date}, 系統自動計算剩餘 {calculated_times} 次)")
-                st.rerun() 
-    st.divider()
+            if submitted:
+                if m_name.strip() == "":
+                    st.error("⚠️ 姓名不能為空白！")
+                else:
+                    today = datetime.today()
+                    days_diff_new = (today.date() - m_start_date).days
+                    calculated_times = int(10 - np.ceil(days_diff_new / 7))
+                    
+                    new_mem = pd.DataFrame([{
+                        "姓名": m_name,
+                        "繳費日期": pd.to_datetime(m_pay_date),
+                        "季繳開始日期": pd.to_datetime(m_start_date),
+                        "剩餘次數": calculated_times
+                    }])
+                    st.session_state.members_df = pd.concat([st.session_state.members_df, new_mem], ignore_index=True)
+                    st.success(f"✅已新增球友：{m_name}")
+                    st.rerun()
 
     with col_right:
         st.subheader("📋季繳追蹤清單")
