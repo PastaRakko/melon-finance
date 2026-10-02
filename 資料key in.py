@@ -171,6 +171,8 @@ with tab2:
         for col in display_df.select_dtypes(include=['object']).columns:
             display_df[col] = display_df[col].fillna("")
             
+display_df.insert(0, "🗑️ 刪除", False)
+            
         edited_trans = st.data_editor(
             display_df, 
             use_container_width=True, 
@@ -178,17 +180,27 @@ with tab2:
             hide_index=True,
             key="trans_editor",
             column_config={
+                "🗑️刪除": st.column_config.CheckboxColumn("刪除", default=False, width="small"),
                 "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD"),
                 "類別": st.column_config.SelectboxColumn("類別", options=["收入", "支出"], required=True),
                 "項目": st.column_config.SelectboxColumn("項目", options=item_options),
                 "經手人": st.column_config.SelectboxColumn("經手人", options=handler_options)
             }
-        )   
+        )
         
-        # 表格上若做了任何修改，將新資料存回系統並重新整理重算總結餘
-        if not edited_trans.equals(display_df):
-            st.session_state.trans_df = edited_trans
+        # ✨ 處理邏輯：如果有人把「刪除」打勾了
+        if edited_trans["🗑️刪除"].any():
+            # 保留沒有打勾的資料，並把「🗑️刪除」這欄拿掉後存回系統
+            st.session_state.trans_df = edited_trans[~edited_trans["🗑️ 刪除"]].drop(columns=["🗑️ 刪除"]).reset_index(drop=True)
+            st.success("✅ 已成功刪除勾選的紀錄！")
             st.rerun()
+        else:
+            # 如果沒有打勾，比對是否有雙擊修改其他內容
+            orig_check = display_df.drop(columns=["🗑️ 刪除"])
+            edit_check = edited_trans.drop(columns=["🗑️ 刪除"])
+            if not edit_check.equals(orig_check):
+                st.session_state.trans_df = edit_check
+                st.rerun()
 
 # ------------------------------------------
 # 分頁 1：Summary
