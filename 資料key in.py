@@ -207,6 +207,10 @@ with tab2:
     # 右側：收支總表與編輯
     with col_right:
         st.subheader("📝收支總表")
+
+        # 初始化動態 Key (用於取消刪除時強制刷新前端畫面)
+        if "trans_key_version" not in st.session_state:
+            st.session_state.trans_key_version = 0
         
         if "日期" in st.session_state.trans_df.columns:
             display_df = st.session_state.trans_df.sort_values(by="日期", ascending=False).copy()
@@ -226,7 +230,7 @@ with tab2:
             use_container_width=True, 
             num_rows="fixed",
             hide_index=True,
-            key="trans_editor",
+            key=f"trans_editor_{st.session_state.trans_key_version}",
             column_config={
                 "🗑️刪除": st.column_config.CheckboxColumn("刪除", default=False, width="small"),
                 "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD"),
@@ -243,13 +247,12 @@ with tab2:
             with col_btn1:
                 if st.button("❎確認刪除", key="confirm_del_trans", use_container_width=True):
                     st.session_state.trans_df = edited_trans[~edited_trans["🗑️刪除"]].drop(columns=["🗑️️刪除"]).reset_index(drop=True)
-                    if "trans_editor" in st.session_state:
-                        del st.session_state["trans_editor"]
+                    st.session_state.trans_key_version += 1 
                     st.rerun()
+
             with col_btn2:
                 if st.button("🔙取消刪除", key="cancel_del_trans", use_container_width=True):
-                    if "trans_editor" in st.session_state:
-                        del st.session_state["trans_editor"]
+                    st.session_state.trans_key_version += 1
                     st.rerun()
         else:
             orig_check = display_df.drop(columns=["🗑️刪除"])
@@ -303,6 +306,10 @@ with tab3:
     # 右側：季繳追蹤清單與編輯
     with col_right:
         st.subheader("📋季繳追蹤清單")
+
+        # 初始化動態 Key (用於取消刪除時強制刷新前端畫面)
+        if "members_key_version" not in st.session_state:
+            st.session_state.members_key_version = 0
         
         def update_status(times):
             if times <= 0: return "⛔已結束"
@@ -311,11 +318,7 @@ with tab3:
 
         display_df = st.session_state.members_df.copy()
         display_df['狀態提醒'] = display_df['剩餘次數'].apply(update_status)
-
-        # 處理空值避免顯示 None
-        for col in display_df.select_dtypes(include=['object']).columns:
-            display_df[col] = display_df[col].fillna("")
-            
+          
         # 插入刪除打勾欄位
         display_df.insert(0, "🗑️刪除", False)
 
@@ -329,7 +332,7 @@ with tab3:
             use_container_width=True,
             num_rows="fixed",
             hide_index=True,
-            key="members_editor",
+            key=f"members_editor_{st.session_state.members_key_version}",
             column_config={
                 "🗑️刪除": st.column_config.CheckboxColumn("刪除", default=False, width="small"),
                 "繳費日期": st.column_config.DateColumn("繳費日期", format="YYYY-MM-DD"),
@@ -345,13 +348,11 @@ with tab3:
             with col_btn1:
                 if st.button("❎確認刪除", key="confirm_del_mem", use_container_width=True):
                     st.session_state.members_df = edited_members[~edited_members["🗑️️刪除"]][['姓名', '繳費日期', '季繳開始日期', '剩餘次數']].reset_index(drop=True)
-                    if "members_editor" in st.session_state:
-                        del st.session_state["members_editor"]
+                    st.session_state.members_key_version += 1
                     st.rerun()
             with col_btn2:
                 if st.button("🔙取消刪除", key="cancel_del_mem", use_container_width=True):
-                    if "members_editor" in st.session_state:
-                        del st.session_state["members_editor"]
+                    st.session_state.members_key_version += 1
                     st.rerun()
         else:
             orig_check = display_df.drop(columns=["🗑️刪除"])
