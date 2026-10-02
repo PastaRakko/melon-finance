@@ -105,9 +105,9 @@ with tab1:
         quarterly_reserve = total_remaining * cost_per_time
 
         col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("💵 總結餘現金", f"${net_balance:,.0f}")
         with col2:
+            st.metric("💵 總結餘現金", f"${net_balance:,.0f}")
+        with col1:
             st.success(f"### 🛡️ 安全挪用款: **${safe_buffer:,.0f}**\n*(單週場地費 ${weekly_venue_fee:.0f} × 2週)*")
         with col3:
             st.metric("💳 季繳預留金", f"${quarterly_reserve:,.0f}", f"共剩 {total_remaining} 次未打")
@@ -153,6 +153,21 @@ with tab1:
         display_df = st.session_state.trans_df
         st.warning(f"⚠️ 找不到『日期』欄位，目前的欄位有：{list(display_df.columns)}。請確認 Excel 的標題列位置。")
     st.dataframe(display_df, use_container_width=True)
+
+    # ✨ 新增：刪除收支紀錄功能
+    with st.expander("🗑️ 刪除錯誤的收支紀錄"):
+        del_opts = []
+        for idx, row in st.session_state.trans_df.iterrows():
+            d_str = row['日期'].strftime('%Y-%m-%d') if pd.notnull(row['日期']) else ''
+            del_opts.append(f"{idx} | {d_str} - {row.get('類別','')} : {row.get('項目','')} (${row.get('$','')})")
+        
+        sel_del = st.selectbox("請選擇要刪除的紀錄：", ["請選擇..."] + del_opts)
+        if st.button("🚨 確認刪除這筆收支"):
+            if sel_del != "請選擇...":
+                del_idx = int(sel_del.split(" | ")[0])
+                st.session_state.trans_df = st.session_state.trans_df.drop(del_idx).reset_index(drop=True)
+                st.success("✅ 已成功刪除該筆紀錄！")
+                st.rerun()
 
 # ------------------------------------------
 # 分頁 2：視覺化圖表
@@ -234,3 +249,19 @@ with tab3:
 
     styled_df = display_df.style.apply(highlight_zero, axis=1)
     st.dataframe(styled_df, use_container_width=True, hide_index=True)
+
+# ✨ 新增：刪除季繳球友功能
+    with st.expander("🗑️️ 刪除季繳球友名單"):
+        del_mem_opts = []
+        for idx, row in st.session_state.members_df.iterrows():
+            d_str = row['季繳開始日期'].strftime('%Y-%m-%d') if pd.notnull(row['季繳開始日期']) else '無日期'
+            del_mem_opts.append(f"{idx} | {row.get('姓名','')} (開始日: {d_str})")
+            
+        sel_mem_del = st.selectbox("請選擇要刪除的球友：", ["請選擇..."] + del_mem_opts)
+        if st.button("🚨 確認刪除這位球友"):
+            if sel_mem_del != "請選擇...":
+                mem_del_idx = int(sel_mem_del.split(" | ")[0])
+                st.session_state.members_df = st.session_state.members_df.drop(mem_del_idx).reset_index(drop=True)
+                st.success("✅ 已成功刪除該名球友！")
+                st.rerun()
+
